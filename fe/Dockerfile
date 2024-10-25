@@ -1,26 +1,20 @@
 # Build stage
-FROM node:18-alpine as build
+FROM node:16-alpine as build
 
-# Set working directory
 WORKDIR /usr/src/app
 
-# Copy package files
-COPY package*.json ./
-
 # Install dependencies
+COPY package*.json ./
 RUN npm install
 
-# Copy app files
+# Copy the rest of the application files
 COPY . .
 
-# Build the app
+# Build the React app
 RUN npm run build
 
-# Production stage
+# Production stage (NGINX)
 FROM nginx:alpine
-
-# Copy build files to NGINX's default directory
 COPY --from=build /usr/src/app/build /usr/share/nginx/html
 
-# Expose the default port
 EXPOSE 80
