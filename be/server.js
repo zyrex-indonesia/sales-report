@@ -1,50 +1,54 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const multer = require('multer');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { authMiddleware, adminMiddleware } = require('./middleware/auth');
-
+const cors = require('cors');
 const User = require('./models/User');
-const Report = require('./models/Report');
 
 const app = express();
-const upload = multer({ dest: 'uploads/' });
-const PORT = process.env.PORT || 5000;
-
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
-
 app.use(express.json());
+app.use(cors());
 
-// User registration (Admin Only)
-app.post('/register', authMiddleware, adminMiddleware, async (req, res) => {
-  const { name, email, password, role } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const user = new User({ name, email, password: hashedPassword, role });
-  await user.save();
-  res.status(201).json({ message: 'User created' });
+const JWT_SECRET = 'your_secret_key';
+
+// Connect to MongoDB
+mongoose.connect('mongodb://localhost:27017/sales-report', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
 });
 
-// User login
-app.post('/login', async (req, res) => {
-  const { email, password } = req.body;
-  const user = await User.findOne({ email });
-  if (!user || !(await bcrypt.compare(password, user.password))) {
-    return res.status(401).json({ message: 'Invalid credentials' });
+// Register a new user
+app.post('/register', async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    const user = new User({ username, password });
+    await user.save();
+    res.status(201).json({ message: 'User registered successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error registering user' });
   }
-  const token = jwt.sign({ id: user._id, role: user.role }, 'secret_key');
-  res.json({ token });
 });
 
-// Submit a report (Salespersons/Admin)
-app.post('/reports', authMiddleware, upload.single('photo'), async (req, res) => {
-  const { location, name } = req.body;
-  const photo = req.file ? req.file.filename : null;
-  const report = new Report({ user: req.user.id, location, name, photo });
-  await report.save();
-  res.status(201).json({ message: 'Report submitted' });
+// Login user
+app.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    const user = await User.findOne({ username });
+    if (!user) return res.status(400).json({ success: false, message: 'Invalid username or password' });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json({ success: false, message: 'Invalid username or password' });
+
+    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
+    res.json({ success: true, token });
+  } catch (err) {
+    res.status(500).json({ message: 'Error logging in' });
+  }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// Start the server
+app.listen(5000, () => {
+  console.log('Server running on port 5000');
 });
