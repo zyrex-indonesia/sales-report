@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import zyrexLogo from '../../../assets/images/logo.png';
+import './global.css'
 
 const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -30,46 +32,33 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="login-container" style={{ textAlign: 'center', marginTop: '50px' }}>
-      <form onSubmit={handleSubmit} style={{ display: 'inline-block', padding: '20px', background: 'white', borderRadius: '10px' }}>
-        <h2 style={{ color: '#b22222' }}>zyrex</h2>
-        <div>
-          <label>Username:</label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            style={{ display: 'block', margin: '10px auto', padding: '10px', borderRadius: '5px', width: '200px' }}
-            required
-          />
-        </div>
-        <div>
-          <label>Password:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={{ display: 'block', margin: '10px auto', padding: '10px', borderRadius: '5px', width: '200px' }}
-            required
-          />
-        </div>
-        <button
-          type="submit"
-          style={{
-            backgroundColor: '#32CD32',
-            border: 'none',
-            color: 'white',
-            padding: '10px 20px',
-            borderRadius: '5px',
-            marginTop: '10px',
-            cursor: 'pointer',
-          }}
-        >
-          LOGIN
-        </button>
-      </form>
-    </div>
-  );
+      <div className="login-container">
+        <form onSubmit={handleSubmit} className="login-form">
+          <img src={zyrexLogo} alt="Zyrex Logo" className="login-logo" />
+          <div>
+            <label className="login-label">Username:</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="login-input"
+              required
+            />
+          </div>
+          <div>
+            <label className="login-label">Password:</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="login-input"
+              required
+            />
+          </div>
+          <button type="submit" className="login-button">LOGIN</button>
+        </form>
+      </div>
+    );
 };
 
 export default LoginPage;
