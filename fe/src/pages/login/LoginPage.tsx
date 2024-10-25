@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import zyrexLogo from '../../../assets/images/logo.png';
-import './global.css'
+import zyrexLogo from '../../assets/images/logo.png';
 
 const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -10,8 +9,6 @@ const LoginPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Call the backend to authenticate the user
     const response = await fetch('http://localhost:5000/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -19,12 +16,8 @@ const LoginPage: React.FC = () => {
     });
 
     const data = await response.json();
-
     if (data.success) {
-      // Store the token in localStorage (or wherever you want)
       localStorage.setItem('authToken', data.token);
-
-      // Redirect to the dashboard
       navigate('/dashboard');
     } else {
       alert('Login failed: ' + data.message);
@@ -32,33 +25,38 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-      <div className="login-container">
-        <form onSubmit={handleSubmit} className="login-form">
-          <img src={zyrexLogo} alt="Zyrex Logo" className="login-logo" />
-          <div>
-            <label className="login-label">Username:</label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="login-input"
-              required
-            />
-          </div>
-          <div>
-            <label className="login-label">Password:</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="login-input"
-              required
-            />
-          </div>
-          <button type="submit" className="login-button">LOGIN</button>
-        </form>
-      </div>
-    );
+    <div className="flex items-center justify-center h-screen bg-red-800">
+      <form onSubmit={handleSubmit} className="bg-white p-10 rounded-lg shadow-lg text-center">
+        <img src={zyrexLogo} alt="Zyrex Logo" className="mb-8 mx-auto w-32" />
+        <div className="mb-4 text-left">
+          <label className="block text-gray-700 font-bold mb-2">Username:</label>
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+            required
+          />
+        </div>
+        <div className="mb-6 text-left">
+          <label className="block text-gray-700 font-bold mb-2">Password:</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          className="w-full bg-green-500 text-white py-2 rounded-lg font-bold hover:bg-green-600"
+        >
+          LOGIN
+        </button>
+      </form>
+    </div>
+  );
 };
 
 export default LoginPage;
