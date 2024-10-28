@@ -9,18 +9,31 @@ const LoginPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const response = await fetch('http://localhost:5000/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    });
 
-    const data = await response.json();
-    if (data.success) {
-      localStorage.setItem('authToken', data.token);
-      navigate('/dashboard');
-    } else {
-      alert('Login failed: ' + data.message);
+    try {
+      const response = await fetch('http://localhost:5000/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Response data:", data); // Add this line for debugging
+
+      if (data.success) {
+        localStorage.setItem('authToken', data.token);
+        console.log("Login successful, token stored in localStorage.");
+        navigate('/dashboard');
+      } else {
+        alert('Login failed: ' + data.message);
+      }
+    } catch (error) {
+      console.error("Fetch error: ", error);
+      alert('Failed to connect to the server. Please try again later.');
     }
   };
 

@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import LoginPage from './pages/login/LoginPage';
 import Dashboard from './pages/dashboard/dashboard';
+import BaseLayout from '/Users/user/Documents/sales-report/fe/components/layouts/BaseLayout';
 import './global.css';  // Import global CSS here
 
 const isAuthenticated = () => {
