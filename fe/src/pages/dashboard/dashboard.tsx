@@ -1,11 +1,11 @@
 import React from 'react';
+import BaseLayout from '../../components/layouts/BaseLayout';
 
 const Dashboard: React.FC = () => {
   return (
-    <div>
+    <BaseLayout>
       <h1>Welcome to the Dashboard</h1>
-      {/* Add any dashboard components or functionality here */}
-    </div>
+    </BaseLayout>
   );
 };
 
