@@ -1,6 +1,10 @@
+// middleware/auth.js
+require('dotenv').config();
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your_default_secret';
 
 // Middleware to check if the user is authenticated
 const authMiddleware = (req, res, next) => {
@@ -10,7 +14,7 @@ const authMiddleware = (req, res, next) => {
     return res.status(403).json({ message: 'No token provided' });
   }
 
-  jwt.verify(token, 'secret_key', (err, decoded) => {
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
     if (err) {
       console.log("Failed to authenticate token:", err.message);
       return res.status(500).json({ message: 'Failed to authenticate token' });
@@ -25,7 +29,7 @@ const authMiddleware = (req, res, next) => {
 const adminMiddleware = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);
-    if (user.role !== 'admin') {
+    if (!user || user.role !== 'admin') {
       console.log("Access denied: User is not an admin");
       return res.status(403).json({ message: 'Access denied. Admins only' });
     }

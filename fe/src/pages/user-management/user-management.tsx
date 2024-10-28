@@ -11,18 +11,31 @@ interface User {
 const UserManagement: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
 
-  // Fetch users from the database
   const fetchUsers = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/users');
+      // Retrieve token from localStorage
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        console.error("No token found in localStorage.");
+        return;
+      }
+  
+      // Make the fetch request with the token in headers
+      const response = await fetch('http://localhost:5000/api/users', {
+        headers: {
+          'Authorization': `Bearer ${token}`,  // Attach the token
+        },
+      });
+  
       if (!response.ok) throw new Error('Failed to fetch users');
       const data = await response.json();
-      console.log(data); // Log the fetched data
-      setUsers(data);
+      setUsers(data);  // Update state with fetched data
     } catch (error) {
       console.error('Error fetching users:', error);
     }
   };
+  
+  
   
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-require('dotenv').config()
+require('dotenv').config();
 
 const express = require('express');
 const mongoose = require('mongoose');
@@ -6,10 +6,17 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const User = require('./models/User');
+const userRoutes = require('./routes/userRoutes'); // Import user routes
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+
+// CORS setup
+const corsOptions = {
+  origin: 'http://localhost:3000',
+  optionsSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const PORT = process.env.PORT || 5000;
@@ -20,12 +27,6 @@ mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
-
-const corsOptions = {
-  origin: 'http://localhost:3000',
-  optionsSuccessStatus: 200,
-};
-app.use(cors(corsOptions));
 
 // Middleware to verify JWT token and set req.user
 const authMiddleware = (req, res, next) => {
@@ -53,70 +54,39 @@ const adminMiddleware = async (req, res, next) => {
   }
 };
 
-// Register a new user (admin only)
-app.post('/register', authMiddleware, adminMiddleware, async (req, res) => {
-  const { username, password, role } = req.body;
+// User routes (protected with authMiddleware and adminMiddleware where necessary)
+app.use('/api', userRoutes);
 
-  try {
-    const existingUser = await User.findOne({ username });
-    if (existingUser) {
-      return res.status(400).json({ message: 'Username already exists' });
-    }
-
-    const user = new User({ username, password, role });
-    await user.save();
-    res.status(201).json({ message: 'User registered successfully' });
-  } catch (err) {
-    res.status(500).json({ message: 'Error registering user' });
-  }
-});
-
-// Login user
+// Login route
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
-  console.log("Login attempt:");
-  console.log("Username:", username);
-  console.log("Entered password:", password);
 
   try {
     const user = await User.findOne({ username });
-    if (!user) {
-      console.log("User not found");
-      return res.status(400).json({ success: false, message: 'Invalid username or password' });
-    }
+    if (!user) return res.status(400).json({ success: false, message: 'Invalid username or password' });
 
-    console.log("Stored hashed password for user:", user.password);
-    
     const isMatch = await bcrypt.compare(password, user.password);
-    console.log("Password match result:", isMatch);
-
-    if (!isMatch) {
-      console.log("Password mismatch");
-      return res.status(400).json({ success: false, message: 'Invalid username or password' });
-    }
+    if (!isMatch) return res.status(400).json({ success: false, message: 'Invalid username or password' });
 
     const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: '1h' });
     res.json({ success: true, token });
   } catch (err) {
-    console.error('Error logging in:', err);
     res.status(500).json({ message: 'Error logging in' });
   }
 });
 
+// Function to create initial admin user
 const createInitialAdmin = async () => {
   try {
     const adminExists = await User.findOne({ username: 'admin' });
     if (!adminExists) {
-      const plaintextPassword = 'password';  // use the same password here and in the login attempt
-      console.log("Plaintext password for admin:", plaintextPassword);
-
+      const plaintextPassword = 'password'; // Set your desired password here
       const hashedPassword = await bcrypt.hash(plaintextPassword, 10);
-      console.log("Hashed password for admin:", hashedPassword);
 
       const admin = new User({
         username: 'admin',
         password: hashedPassword,
-        role: 'admin'
+        role: 'admin',
       });
       await admin.save();
       console.log('Initial admin user created with username: "admin"');
@@ -128,14 +98,13 @@ const createInitialAdmin = async () => {
   }
 };
 
-
+// Ensure initial admin user is created on database connection
 mongoose.connection.once('open', async () => {
   await createInitialAdmin();
-  console.log("Initial admin user checked/created.");
+  console.log('Initial admin user checked/created.');
 });
 
 // Start the server
-app.listen(5000, () => {
-  console.log('Server running on port 5000');
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
-

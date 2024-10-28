@@ -1,75 +1,86 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import zyrexLogo from '../../assets/images/logo.png';
+import React, { useState, useEffect } from 'react';
+import BaseLayout from '../../components/layouts/BaseLayout';
+import UserCard from '../../components/molecules/card/index';
 
-const LoginPage: React.FC = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const navigate = useNavigate();
+interface User {
+  _id: string;
+  username: string;
+  role: string;
+}
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+const UserManagement: React.FC = () => {
+  const [users, setUsers] = useState<User[]>([]);
 
+  const fetchUsers = async () => {
     try {
-      const response = await fetch('http://localhost:5000/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        console.error("No token found in localStorage.");
+        return;
+      }
+
+      const response = await fetch('http://localhost:5000/api/users', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
+      if (!response.ok) throw new Error('Failed to fetch users');
       const data = await response.json();
-      console.log("Response data:", data); // Add this line for debugging
-
-      if (data.success) {
-        localStorage.setItem('authToken', data.token);
-        console.log("Login successful, token stored in localStorage.");
-        navigate('/dashboard');
-      } else {
-        alert('Login failed: ' + data.message);
-      }
+      setUsers(data);
     } catch (error) {
-      console.error("Fetch error: ", error);
-      alert('Failed to connect to the server. Please try again later.');
+      console.error('Error fetching users:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const addUser = async () => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      console.error("No token found in localStorage.");
+      return;
+    }
+
+    const newUser = { username: 'New User', role: 'user' };
+    
+    try {
+      const response = await fetch('http://localhost:5000/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,  // Attach the token here as well
+        },
+        body: JSON.stringify(newUser),
+      });
+
+      if (!response.ok) throw new Error('Failed to add user');
+      const data = await response.json();
+      setUsers((prevUsers) => [...prevUsers, data]);
+    } catch (error) {
+      console.error('Error adding user:', error);
     }
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-red-800">
-      <form onSubmit={handleSubmit} className="bg-white p-10 rounded-lg shadow-lg text-center">
-        <img src={zyrexLogo} alt="Zyrex Logo" className="mb-8 mx-auto w-32" />
-        <div className="mb-4 text-left">
-          <label className="block text-gray-700 font-bold mb-2">Username:</label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-            required
-          />
-        </div>
-        <div className="mb-6 text-left">
-          <label className="block text-gray-700 font-bold mb-2">Password:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-            required
-          />
-        </div>
+    <BaseLayout>
+      <div className="p-6 bg-red-800 min-h-screen">
         <button
-          type="submit"
-          className="w-full bg-green-500 text-white py-2 rounded-lg font-bold hover:bg-green-600"
+          onClick={addUser}
+          className="mb-4 px-4 py-2 bg-green-500 text-white font-bold rounded-lg"
         >
-          LOGIN
+          Add New User
         </button>
-      </form>
-    </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {users.map((user) => (
+            <UserCard key={user._id} username={user.username} role={user.role} />
+          ))}
+        </div>
+      </div>
+    </BaseLayout>
   );
 };
 
-export default LoginPage;
+export default UserManagement;
