@@ -1,6 +1,6 @@
 const express = require('express');
 const User = require('../models/User');
-const { authMiddleware, adminMiddleware } = require('../middleware/auth'); // Consolidated middleware import
+const { authMiddleware, adminMiddleware } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -21,14 +21,14 @@ router.post('/users', authMiddleware, adminMiddleware, async (req, res) => {
 
   // Ensure all required fields are provided
   if (!username || !role || !password) {
-    return res.status(400).json({ message: 'Username, role, and password are required' });
+    return res.status(400).json({ success: false, message: 'Username, role, and password are required' });
   }
 
   try {
     // Check if the username already exists
     const existingUser = await User.findOne({ username });
     if (existingUser) {
-      return res.status(400).json({ message: 'Username already exists' });
+      return res.status(400).json({ success: false, message: 'Username already exists' });
     }
 
     // Create a new user
@@ -36,10 +36,10 @@ router.post('/users', authMiddleware, adminMiddleware, async (req, res) => {
 
     // Save the new user to the database
     await newUser.save();
-    res.status(201).json({ message: 'User created successfully', user: newUser });
+    res.status(201).json({ success: true, message: 'User created successfully', user: newUser });
   } catch (error) {
     console.error("Error creating user:", error.message);
-    res.status(500).json({ message: 'Error creating user', error: error.message });
+    res.status(500).json({ success: false, message: 'Error creating user', error: error.message });
   }
 });
 

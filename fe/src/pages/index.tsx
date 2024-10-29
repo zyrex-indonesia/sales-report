@@ -1,26 +1,21 @@
-// src/pages/index.tsx
+// src/pages/login/LoginPage.tsx
+import LoginModule from '@modules/login/module';
+import { NextPage } from 'next';
+import { ReactElement } from 'react';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
-import LoginPage from '../pages/login/LoginPage';
 
-
-const IndexPage = () => {
-  const [authenticated, setAuthenticated] = useState(false);
+const LoginPage: NextPage = (): ReactElement => {
   const router = useRouter();
 
-  useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      setAuthenticated(true);
-      router.push('/dashboard'); // Redirect to dashboard if authenticated
-    }
-  }, [router]);
+  // Function to handle successful login by storing the token and navigating to the dashboard
+  const onLoginSuccess = (token: string) => {
+    localStorage.setItem('authToken', token); // Store token in localStorage
+    console.log("Login successful, token stored in localStorage.");
+    router.push('/dashboard'); // Navigate to dashboard
+  };
 
-  if (authenticated) {
-    return null; // Optionally return a loading spinner while redirecting
-  }
-
-  return <LoginPage />;
+  return <LoginModule onLoginSuccess={onLoginSuccess} />;
 };
 
-export default IndexPage;
+export default LoginPage;
+

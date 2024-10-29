@@ -20,12 +20,14 @@
     "noEmit": true,
     "jsx": "preserve",
     "baseUrl": "./src",
-    "paths": {   // Added paths to simplify module imports
-      "@components/*": ["components/*"],
-      "@modules/*": ["Modules/*"],
-      "@assets/*": ["assets/*"],
-      "@styles/*": ["styles/*"],
-      "@pages/*": ["pages/*"]
+    "paths": {
+        "@components/*": ["./components/*"],
+        "@modules/*": ["./Modules/*"],  // Make sure the folder is correctly named and matched in imports
+        "@assets/*": ["./assets/*"],
+        "@styles/*": ["./styles/*"],
+        "@pages/*": ["./pages/*"],
+        "@layouts/*": ["components/layouts/*"],
+        "@molecules/*": ["components/molecules/*"],
     },
     "incremental": true,
     "strictNullChecks": true // Added strict null checks for better type safety

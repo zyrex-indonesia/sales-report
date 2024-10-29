@@ -1,4 +1,5 @@
 // middleware/auth.js
+
 require('dotenv').config();
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
@@ -8,22 +9,26 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your_default_secret';
 
 // Middleware to check if the user is authenticated
 const authMiddleware = (req, res, next) => {
-  const token = req.headers.authorization;
-  if (!token) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
     console.log("No token provided");
     return res.status(403).json({ message: 'No token provided' });
   }
 
+  const token = authHeader.split(' ')[1];  // Remove "Bearer" prefix
+  console.log("Token received:", token);
+
   jwt.verify(token, JWT_SECRET, (err, decoded) => {
     if (err) {
       console.log("Failed to authenticate token:", err.message);
-      return res.status(500).json({ message: 'Failed to authenticate token' });
+      return res.status(401).json({ message: 'Failed to authenticate token' });
     }
     req.user = decoded;
     console.log("Authenticated user:", req.user);
     next();
   });
 };
+
 
 // Middleware to check if the user is an admin
 const adminMiddleware = async (req, res, next) => {
@@ -41,16 +46,21 @@ const adminMiddleware = async (req, res, next) => {
   }
 };
 
-// Function to create a new user (admin only)
+// Controller function to create a new user (admin only)
 const createUser = async (req, res) => {
   const { username, password, role } = req.body;
-  console.log("Creating new user:", username);
+  
+  // Ensure username and password are provided
+  if (!username || !password) {
+    console.log("Username and password are required");
+    return res.status(400).json({ message: 'Username and password are required' });
+  }
 
   try {
     // Check if the user already exists
     const existingUser = await User.findOne({ username });
     if (existingUser) {
-      console.log("User already exists");
+      console.log("User already exists:", username);
       return res.status(400).json({ message: 'User already exists' });
     }
 
@@ -68,11 +78,11 @@ const createUser = async (req, res) => {
 
     // Save the user
     await newUser.save();
-    console.log("User created successfully");
-    res.status(201).json({ message: 'User created successfully', user: newUser });
+    console.log("User created successfully:", newUser.username);
+    res.status(201).json({ message: 'User created successfully', user: { username: newUser.username, role: newUser.role } });
   } catch (error) {
     console.log("Error creating user:", error.message);
-    res.status(500).json({ message: 'Error creating user', error });
+    res.status(500).json({ message: 'Error creating user', error: error.message });
   }
 };
 
