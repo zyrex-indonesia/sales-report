@@ -14,30 +14,32 @@ const LoginModule: React.FC<LoginModuleProps> = ({ onLoginSuccess }) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null); // Reset error state on new attempt
-
+  
     if (!username || !password) {
       setError("Both username and password are required.");
       setIsLoading(false);
       return;
     }
-
+  
     try {
       const response = await fetch('http://localhost:5000/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Important for session-based authentication
         body: JSON.stringify({ username, password }),
       });
-
+  
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
+  
       const data = await response.json();
+      console.log("Sending data:", { username, password });
       console.log("Response data:", data);
-
+  
       if (data.success) {
         console.log("Login successful.");
-        onLoginSuccess(data.token);
+        onLoginSuccess(""); // No token, as session-based
       } else {
         setError(data.message || 'Login failed. Please try again.');
       }
@@ -48,6 +50,7 @@ const LoginModule: React.FC<LoginModuleProps> = ({ onLoginSuccess }) => {
       setIsLoading(false);
     }
   };
+  
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-red-800">

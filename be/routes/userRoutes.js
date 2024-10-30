@@ -1,5 +1,5 @@
 const express = require('express');
-const User = require('../models/User');
+const User = require('../models/User'); // Sequelize User model
 const { authMiddleware, adminMiddleware } = require('../middleware/auth');
 
 const router = express.Router();
@@ -7,7 +7,8 @@ const router = express.Router();
 // Endpoint to get all users (requires authentication and admin privileges)
 router.get('/users', authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    const users = await User.find();
+    // Fetch all users
+    const users = await User.findAll();
     res.json(users);
   } catch (error) {
     console.error("Error fetching users:", error.message);
@@ -26,16 +27,14 @@ router.post('/users', authMiddleware, adminMiddleware, async (req, res) => {
 
   try {
     // Check if the username already exists
-    const existingUser = await User.findOne({ username });
+    const existingUser = await User.findOne({ where: { username } });
     if (existingUser) {
       return res.status(400).json({ success: false, message: 'Username already exists' });
     }
 
     // Create a new user
-    const newUser = new User({ username, role, password });
+    const newUser = await User.create({ username, role, password });
 
-    // Save the new user to the database
-    await newUser.save();
     res.status(201).json({ success: true, message: 'User created successfully', user: newUser });
   } catch (error) {
     console.error("Error creating user:", error.message);

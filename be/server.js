@@ -1,10 +1,10 @@
 require('dotenv').config();
 
 const express = require('express');
-const mongoose = require('mongoose');
+const session = require('express-session');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const cors = require('cors');
+const Sequelize = require('sequelize');
 const User = require('./models/User');
 const userRoutes = require('./routes/userRoutes'); // Import user routes
 
@@ -12,44 +12,53 @@ const app = express();
 app.use(express.json());
 
 // CORS setup
-const corsOptions = {
-  origin: 'http://localhost:3000',
-  optionsSuccessStatus: 200,
-};
-app.use(cors(corsOptions));
+app.use(cors({
+  origin: 'http://localhost:3000', // Allow requests from this origin
+  credentials: true, // Allow credentials (session cookies)
+}));
 
-const JWT_SECRET = process.env.JWT_SECRET;
+// Set up session management
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || 'default_secret',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false }, // Set `secure: true` if using HTTPS
+  })
+);
+
+// Rest of your code remains the same
 const PORT = process.env.PORT || 5000;
-const MONGODB_URI = process.env.MONGODB_URI;
 
-// Connect to MongoDB
-mongoose.connect(MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-}).then(() => {
-  console.log("Connected to MongoDB");
-}).catch((error) => {
-  console.error("MongoDB connection error:", error);
-});
+// Initialize Sequelize and connect to MySQL
+const sequelize = new Sequelize(
+  process.env.DB_NAME,
+  process.env.DB_USER,
+  process.env.DB_PASSWORD,
+  {
+    host: process.env.DB_HOST || '127.0.0.1',
+    dialect: 'mysql',
+  }
+);
 
-// Middleware to verify JWT token and set req.user
+// Test the database connection
+sequelize.authenticate()
+  .then(() => console.log("Connected to MySQL"))
+  .catch(err => console.error("MySQL connection error:", err));
+
+// Middleware to check if the user is authenticated via session
 const authMiddleware = (req, res, next) => {
-  const token = req.headers.authorization;
-  if (!token) return res.status(403).json({ message: 'No token provided' });
-
-  jwt.verify(token, JWT_SECRET, (err, decoded) => {
-    if (err) return res.status(500).json({ message: 'Failed to authenticate token' });
-
-    req.user = decoded;
-    next();
-  });
+  if (!req.session || !req.session.userId) {
+    return res.status(403).json({ message: 'Not authenticated. Please log in.' });
+  }
+  next();
 };
 
 // Middleware to check if the user is an admin
 const adminMiddleware = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    if (user.role !== 'admin') {
+    const user = await User.findByPk(req.session.userId); // Find user by session userId
+    if (!user || user.role !== 'admin') {
       return res.status(403).json({ message: 'Access denied. Admins only.' });
     }
     next();
@@ -64,35 +73,45 @@ app.use('/api', userRoutes);
 // Login route
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
+  console.log("Login attempt with:", username, password);
 
   try {
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ where: { username } });
     if (!user) return res.status(400).json({ success: false, message: 'Invalid username or password' });
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ success: false, message: 'Invalid username or password' });
 
-    const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: '24h' });
-    res.json({ success: true, token });
+    req.session.userId = user.id;
+    res.json({ success: true, message: 'Logged in successfully' });
   } catch (err) {
+    console.error("Login error:", err);
     res.status(500).json({ message: 'Error logging in' });
   }
+});
+
+
+// Logout route
+app.post('/logout', (req, res) => {
+  req.session.destroy(err => {
+    if (err) return res.status(500).json({ message: 'Error logging out' });
+    res.json({ message: 'Logged out successfully' });
+  });
 });
 
 // Function to create initial admin user
 const createInitialAdmin = async () => {
   try {
-    const adminExists = await User.findOne({ username: 'admin' });
+    const adminExists = await User.findOne({ where: { username: 'admin' } });
     if (!adminExists) {
       const plaintextPassword = 'password'; // Set your desired password here
       const hashedPassword = await bcrypt.hash(plaintextPassword, 10);
 
-      const admin = new User({
+      const admin = await User.create({
         username: 'admin',
         password: hashedPassword,
         role: 'admin',
       });
-      await admin.save();
       console.log('Initial admin user created with username: "admin"');
     } else {
       console.log('Admin user already exists');
@@ -102,8 +121,8 @@ const createInitialAdmin = async () => {
   }
 };
 
-// Ensure initial admin user is created on database connection
-mongoose.connection.once('open', async () => {
+// Sync Sequelize models and create initial admin
+sequelize.sync().then(async () => {
   await createInitialAdmin();
   console.log('Initial admin user checked/created.');
 });

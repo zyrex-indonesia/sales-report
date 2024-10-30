@@ -1,39 +1,21 @@
-// middleware/auth.js
-
-require('dotenv').config();
-const User = require('../models/User');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_default_secret';
-
-// Middleware to check if the user is authenticated
+// Middleware to check if the user is authenticated via session
 const authMiddleware = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    console.log("No token provided");
-    return res.status(403).json({ message: 'No token provided' });
+  if (!req.session || !req.session.userId) {
+    console.log("User is not authenticated");
+    return res.status(403).json({ message: 'Not authenticated. Please log in.' });
   }
 
-  const token = authHeader.split(' ')[1];  // Remove "Bearer" prefix
-  console.log("Token received:", token);
-
-  jwt.verify(token, JWT_SECRET, (err, decoded) => {
-    if (err) {
-      console.log("Failed to authenticate token:", err.message);
-      return res.status(401).json({ message: 'Failed to authenticate token' });
-    }
-    req.user = decoded;
-    console.log("Authenticated user:", req.user);
-    next();
-  });
+  console.log("User authenticated:", req.session.userId);
+  next();
 };
-
 
 // Middleware to check if the user is an admin
 const adminMiddleware = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findByPk(req.session.userId); // Use the session-stored user ID
     if (!user || user.role !== 'admin') {
       console.log("Access denied: User is not an admin");
       return res.status(403).json({ message: 'Access denied. Admins only' });
@@ -49,7 +31,7 @@ const adminMiddleware = async (req, res, next) => {
 // Controller function to create a new user (admin only)
 const createUser = async (req, res) => {
   const { username, password, role } = req.body;
-  
+
   // Ensure username and password are provided
   if (!username || !password) {
     console.log("Username and password are required");
@@ -58,7 +40,7 @@ const createUser = async (req, res) => {
 
   try {
     // Check if the user already exists
-    const existingUser = await User.findOne({ username });
+    const existingUser = await User.findOne({ where: { username } });
     if (existingUser) {
       console.log("User already exists:", username);
       return res.status(400).json({ message: 'User already exists' });
@@ -70,14 +52,12 @@ const createUser = async (req, res) => {
     console.log("Hashed password for new user:", hashedPassword);
 
     // Create a new user
-    const newUser = new User({
+    const newUser = await User.create({
       username,
       password: hashedPassword,
       role: role || 'user' // Default role to 'user' if not specified
     });
 
-    // Save the user
-    await newUser.save();
     console.log("User created successfully:", newUser.username);
     res.status(201).json({ message: 'User created successfully', user: { username: newUser.username, role: newUser.role } });
   } catch (error) {
