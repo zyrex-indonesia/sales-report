@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 interface LoginModuleProps {
-  onLoginSuccess: (token: string) => void;
+  onLoginSuccess: () => void; // Callback to redirect or update parent state
 }
 
 const LoginModule: React.FC<LoginModuleProps> = ({ onLoginSuccess }) => {
@@ -14,13 +14,13 @@ const LoginModule: React.FC<LoginModuleProps> = ({ onLoginSuccess }) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null); // Reset error state on new attempt
-  
+
     if (!username || !password) {
       setError("Both username and password are required.");
       setIsLoading(false);
       return;
     }
-  
+
     try {
       const response = await fetch('http://localhost:5000/login', {
         method: 'POST',
@@ -28,18 +28,19 @@ const LoginModule: React.FC<LoginModuleProps> = ({ onLoginSuccess }) => {
         credentials: 'include', // Important for session-based authentication
         body: JSON.stringify({ username, password }),
       });
-  
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        setError(`Login failed with status: ${response.status}`);
+        setIsLoading(false);
+        return;
       }
-  
+
       const data = await response.json();
-      console.log("Sending data:", { username, password });
-      console.log("Response data:", data);
-  
-      if (data.success) {
-        console.log("Login successful.");
-        onLoginSuccess(""); // No token, as session-based
+
+      // Expecting a success message from server
+      if (data.message === 'Logged in successfully') {
+        console.log("Login successful. Redirecting to dashboard...");
+        onLoginSuccess(); // Trigger parent callback
       } else {
         setError(data.message || 'Login failed. Please try again.');
       }
@@ -50,12 +51,11 @@ const LoginModule: React.FC<LoginModuleProps> = ({ onLoginSuccess }) => {
       setIsLoading(false);
     }
   };
-  
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-red-800">
       <form onSubmit={handleSubmit} className="bg-white p-10 rounded-lg shadow-lg text-center max-w-sm w-full">
-        <img src="/logo.png" className="mb-8 mx-auto w-32" />
+        <img src="/logo.png" className="mb-8 mx-auto w-32" alt="Logo" />
 
         {error && (
           <div className="mb-4 text-red-500 text-sm">
