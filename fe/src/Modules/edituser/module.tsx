@@ -20,6 +20,7 @@ const EditUserModule: React.FC = () => {
     if (id) {
       const fetchUser = async () => {
         try {
+          console.log('Fetching user data for ID:', id);
           const response = await fetch(`http://localhost:5000/api/users/${id}`, {
             method: 'GET',
             credentials: 'include', // Ensure cookies are sent with the request
@@ -37,6 +38,7 @@ const EditUserModule: React.FC = () => {
           }
       
           const data = await response.json();
+          console.log('Fetched user data:', data);
           setUsername(data.username || '');
           setFirstName(data.first_name || '');
           setLastName(data.last_name || '');
@@ -53,28 +55,24 @@ const EditUserModule: React.FC = () => {
   
 
   // Handle saving user data
-  const handleSave = async () => {
-    // Check if password fields match
-    if (password && password !== confirmPassword) {
-      alert("Passwords do not match!");
-      return;
-    }
-
-    // Prepare data for PUT request
+  const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
     const updatedUserData = {
       username,
       first_name: firstName,
       last_name: lastName,
       position,
       role,
-      odoo_batch_id: odooBatchId,
-      ...(password && { password }) // Only add password if it's set
+      password,
+      confirmPassword,
     };
+  
+    console.log('Payload being sent:', updatedUserData); // Debugging log
 
     try {
       const response = await fetch(`http://localhost:5000/api/users/${id}`, {
         method: 'PUT',
-        credentials: 'include', // Ensures session cookie is sent
         headers: {
           'Content-Type': 'application/json',
         },
@@ -82,13 +80,12 @@ const EditUserModule: React.FC = () => {
       });
   
       if (response.ok) {
-        alert("User updated successfully");
-        router.push('/user-management'); // Navigate back to user management after save
+        alert('User updated successfully');
       } else {
-        alert("Failed to update user");
+        alert('Failed to update user');
       }
     } catch (error) {
-      console.error("Error updating user:", error);
+      console.error('Error updating user:', error);
     }
   };
 
@@ -97,7 +94,7 @@ const EditUserModule: React.FC = () => {
       <div className="p-6 bg-red-800 min-h-screen flex items-center justify-center">
         <div className="max-w-lg w-full bg-white shadow-md rounded p-6">
           <h2 className="text-xl font-bold mb-6">Edit User</h2>
-          <div className="flex flex-col gap-4">
+          <form onSubmit={handleSave} className="flex flex-col gap-4">
             <label className="block">
               <span className="text-gray-700">Username:</span>
               <input
@@ -180,12 +177,12 @@ const EditUserModule: React.FC = () => {
               />
             </label>
             <button
-              onClick={handleSave}
+              type="submit"
               className="mt-4 bg-green-500 text-white font-bold py-2 px-4 rounded"
             >
               Save Changes
             </button>
-          </div>
+          </form>
         </div>
       </div>
     </BaseLayout>

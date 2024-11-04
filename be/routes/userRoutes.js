@@ -65,31 +65,43 @@ router.post('/', authMiddleware, adminMiddleware, async (req, res) => {
 });
 
 // Endpoint to update a user by ID (requires authentication and admin privileges)
-router.put('/:id', authMiddleware, adminMiddleware, async (req, res) => {
-  const { username, first_name, last_name, position, role, password, odoo_batch_id } = req.body;
+router.put('/:id', authMiddleware, async (req, res) => {
+  const { id } = req.params;
+  const { username, first_name, last_name, position, role, password, confirmPassword } = req.body;
 
   try {
-    const user = await User.findByPk(req.params.id);
+    const user = await User.findByPk(id);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Update fields if they are provided
-    if (username) user.username = username;
-    if (first_name) user.first_name = first_name;
-    if (last_name) user.last_name = last_name;
-    if (position) user.position = position;
-    if (role) user.role = role;
-    if (odoo_batch_id) user.odoo_batch_id = odoo_batch_id;
-    if (password) user.password = await bcrypt.hash(password, 10);
+    // Check if password fields match
+    if (password && password !== confirmPassword) {
+      return res.status(400).json({ message: 'Passwords do not match!' });
+    }
+
+    // Update user fields
+    user.username = username || user.username;
+    user.first_name = first_name || user.first_name;
+    user.last_name = last_name || user.last_name;
+    user.position = position || user.position;
+    user.role = role || user.role;
+
+    // Update the password if provided
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      user.password = hashedPassword;
+    }
 
     await user.save();
-    res.json({ success: true, message: 'User updated successfully', user });
+    res.json({ message: 'User updated successfully', user });
   } catch (error) {
-    console.error("Error updating user:", error.message);
+    console.error('Error updating user:', error);
     res.status(500).json({ message: 'Error updating user' });
   }
 });
+
+
 
 // Endpoint to delete a user by ID (requires authentication and admin privileges)
 router.delete('/:id', authMiddleware, adminMiddleware, async (req, res) => {
