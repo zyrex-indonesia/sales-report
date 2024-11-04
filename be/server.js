@@ -10,6 +10,9 @@ const Sequelize = require('sequelize');
 const User = require('./models/User');
 const userRoutes = require('./routes/userRoutes'); // Import user routes
 
+const fs = require('fs');
+const mysql = require('mysql2');
+
 const app = express();
 app.use(express.json());
 
@@ -28,6 +31,53 @@ app.use(cors({
 }));
 
 const PORT = process.env.PORT || 5000;
+
+// Create a connection to the MySQL database
+const connection = mysql.createConnection({
+  host: 'localhost',  // Update with your database host
+  user: 'root',       // Update with your MySQL username
+  password: 'password', // Update with your MySQL password
+  database: 'mydatabase' // Update with your MySQL database name
+});
+
+function initializeDatabase() {
+  fs.readFile('setup.sql', 'utf-8', (err, sql) => {
+    if (err) {
+      console.error('Error reading SQL file:', err);
+      return;
+    }
+
+    connection.query(sql, (error, results) => {
+      if (error) {
+        console.error('Error executing SQL file:', error);
+        return;
+      }
+      console.log('Database setup complete.');
+    });
+  });
+}
+
+// Check if tables already exist, then initialize if needed
+connection.connect((err) => {
+  if (err) {
+    console.error('Error connecting to MySQL:', err);
+    return;
+  }
+  console.log('Connected to MySQL.');
+
+  // Check if the "users" table exists
+  connection.query("SHOW TABLES LIKE 'users'", (err, result) => {
+    if (err) throw err;
+
+    // If "users" table doesn't exist, run the SQL setup file
+    if (result.length === 0) {
+      console.log("Initializing database...");
+      initializeDatabase();
+    } else {
+      console.log("Database is already initialized.");
+    }
+  });
+})
 
 // Initialize Sequelize and connect to MySQL
 const sequelize = new Sequelize(

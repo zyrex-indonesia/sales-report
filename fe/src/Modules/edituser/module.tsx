@@ -15,6 +15,7 @@ const EditUserModule: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [odooBatchId, setOdooBatchId] = useState('');
 
+  // Fetch user data on component mount
   useEffect(() => {
     if (id) {
       const fetchUser = async () => {
@@ -51,12 +52,15 @@ const EditUserModule: React.FC = () => {
   }, [id]);
   
 
+  // Handle saving user data
   const handleSave = async () => {
+    // Check if password fields match
     if (password && password !== confirmPassword) {
       alert("Passwords do not match!");
       return;
     }
 
+    // Prepare data for PUT request
     const updatedUserData = {
       username,
       first_name: firstName,
@@ -64,7 +68,7 @@ const EditUserModule: React.FC = () => {
       position,
       role,
       odoo_batch_id: odooBatchId,
-      ...(password && { password })
+      ...(password && { password }) // Only add password if it's set
     };
 
     try {
@@ -79,7 +83,7 @@ const EditUserModule: React.FC = () => {
   
       if (response.ok) {
         alert("User updated successfully");
-        router.push('/user-management');
+        router.push('/user-management'); // Navigate back to user management after save
       } else {
         alert("Failed to update user");
       }
