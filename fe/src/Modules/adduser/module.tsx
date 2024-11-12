@@ -25,9 +25,9 @@ const AddUserModule: React.FC = () => {
     try {
       const response = await fetch('http://localhost:5000/api/users', {
         method: 'POST',
+        credentials: 'include', // Include credentials for session-based auth
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
         },
         body: JSON.stringify({
           username,

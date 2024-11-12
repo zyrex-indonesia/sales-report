@@ -9,7 +9,8 @@ const cors = require('cors');
 const Sequelize = require('sequelize');
 const User = require('./models/User');
 const userRoutes = require('./routes/userRoutes'); // Import user routes
-
+const formRoutes = require('./routes/formRoutes');
+const Report = require('./models/Report'); // Import the Report model
 const fs = require('fs');
 const mysql = require('mysql2');
 
@@ -36,8 +37,8 @@ const PORT = process.env.PORT || 5000;
 const connection = mysql.createConnection({
   host: 'localhost',  // Update with your database host
   user: 'root',       // Update with your MySQL username
-  password: 'password', // Update with your MySQL password
-  database: 'mydatabase' // Update with your MySQL database name
+  password: 'Zyr3xuser', // Update with your MySQL password
+  database: 'sales_report_db' // Update with your MySQL database name
 });
 
 function initializeDatabase() {
@@ -142,6 +143,34 @@ const adminMiddleware = async (req, res, next) => {
 
 // Use the imported user routes for all user-related requests
 app.use('/api/users', userRoutes);
+
+// Use the imported form routes for all report-related requests
+app.use('/api/reports', formRoutes); // Mounts formRoutes under /api/reports
+
+app.post('/api/reports/submit', async (req, res) => {
+  try {
+    const { customerName, date, location, submissionTime, endTime } = req.body;
+
+    // Assuming `photo` is being uploaded as binary or file data
+    const photo = req.file ? req.file.path : null;
+
+    // Create a new report entry in the database
+    const report = await Report.create({
+      userId: req.session.userId,  // Assuming user is authenticated and session contains userId
+      name: customerName,
+      date,
+      location,
+      submissionTime,
+      endTime,
+      photo,
+    });
+
+    res.status(200).json({ message: 'Report submitted successfully' });
+  } catch (error) {
+    console.error('Error submitting report:', error);
+    res.status(500).json({ message: 'Error submitting report' });
+  }
+});
 
 // Login route
 app.post('/login', async (req, res) => {

@@ -1,12 +1,235 @@
-// src/modules/report/index.tsx
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import BaseLayout from '@components/layouts/base/index';
 
 const ReportModule: React.FC = () => {
+  const [customerName, setCustomerName] = useState('');
+  const [date, setDate] = useState('');
+  const [location, setLocation] = useState('Fetching location...');
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionTime, setSubmissionTime] = useState('');
+  const [endTime, setEndTime] = useState('');
+
+  useEffect(() => {
+    // Capture the current time when the component mounts
+    const now = new Date();
+    const formattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    setSubmissionTime(formattedTime);
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
+
+          try {
+            const response = await axios.get(`https://nominatim.openstreetmap.org/reverse`, {
+              params: {
+                lat: latitude,
+                lon: longitude,
+                format: 'json'
+              }
+            });
+            const address = response.data.display_name;
+            setLocation(address || 'Location not available');
+          } catch (error) {
+            console.error('Error fetching location:', error);
+            setLocation('Failed to fetch location');
+          }
+        },
+        (error) => {
+          console.error('Error fetching location:', error);
+          setLocation('Failed to fetch location');
+        }
+      );
+    } else {
+      console.error('Geolocation is not supported by this browser.');
+      setLocation('Geolocation not supported');
+    }
+  }, []);
+
+  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setPhoto(event.target.files[0]);
+    }
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    // Check if required fields are filled
+    if (!customerName || !date || !photo) {
+      alert('Please fill in all required fields.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const formData = new FormData();
+    formData.append('customerName', customerName);
+    formData.append('date', date);
+    formData.append('location', location);
+    formData.append('submissionTime', submissionTime);
+    formData.append('endTime', endTime);
+    formData.append('photo', photo);
+
+    try {
+      // Update the endpoint URL to match the backend route
+      const response = await axios.post('http://localhost:5000/api/reports/submit', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        withCredentials: true, // if your backend requires session authentication
+      });
+      
+      console.log('Form submitted successfully:', response.data);
+      alert('Form submitted successfully!');
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('Error submitting form. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <BaseLayout>
-      <h1>Welcome to the Report</h1>
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          padding: '20px',
+          backgroundColor: '#f5f5f5',
+          borderRadius: '8px',
+          width: '50%',
+          margin: '0 auto',
+          marginTop: '50px',
+          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+        }}
+      >
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Customer Name:</label>
+          <input
+            type="text"
+            value={customerName}
+            onChange={(e) => setCustomerName(e.target.value)}
+            required
+            style={{
+              width: '100%',
+              padding: '10px',
+              borderRadius: '10px',
+              border: '1px solid #ccc',
+              backgroundColor: '#e0e0e0',
+              outline: 'none',
+            }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Date:</label>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            required
+            style={{
+              width: '100%',
+              padding: '10px',
+              borderRadius: '10px',
+              border: '1px solid #ccc',
+              backgroundColor: '#e0e0e0',
+              outline: 'none',
+            }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Submission Time:</label>
+          <input
+            type="text"
+            value={submissionTime}
+            readOnly
+            style={{
+              width: '100%',
+              padding: '10px',
+              borderRadius: '10px',
+              border: '1px solid #ccc',
+              backgroundColor: '#e0e0e0',
+              outline: 'none',
+            }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>End Time:</label>
+          <input
+            type="time"
+            value={endTime}
+            onChange={(e) => setEndTime(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '10px',
+              borderRadius: '10px',
+              border: '1px solid #ccc',
+              backgroundColor: '#e0e0e0',
+              outline: 'none',
+            }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Location:</label>
+          <input
+            type="text"
+            value={location}
+            readOnly
+            style={{
+              width: '100%',
+              padding: '10px',
+              borderRadius: '10px',
+              border: '1px solid #ccc',
+              backgroundColor: '#e0e0e0',
+              outline: 'none',
+            }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Photo:</label>
+          <input
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={handlePhotoChange}
+            required
+            style={{
+              width: '100%',
+              padding: '10px',
+              borderRadius: '10px',
+              border: '1px solid #ccc',
+              backgroundColor: '#e0e0e0',
+              outline: 'none',
+            }}
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          style={{
+            width: '100%',
+            padding: '10px',
+            borderRadius: '10px',
+            backgroundColor: '#4CAF50',
+            color: 'white',
+            fontWeight: 'bold',
+            border: 'none',
+            cursor: isSubmitting ? 'not-allowed' : 'pointer',
+          }}
+        >
+          {isSubmitting ? 'Submitting...' : 'Submit'}
+        </button>
+      </form>
     </BaseLayout>
   );
 };

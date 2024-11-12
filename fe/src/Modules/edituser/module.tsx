@@ -55,39 +55,42 @@ const EditUserModule: React.FC = () => {
   
 
   // Handle saving user data
-  const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    
-    const updatedUserData = {
-      username,
-      first_name: firstName,
-      last_name: lastName,
-      position,
-      role,
-      password,
-      confirmPassword,
-    };
+ // Handle saving user data
+const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
   
-    console.log('Payload being sent:', updatedUserData); // Debugging log
-
-    try {
-      const response = await fetch(`http://localhost:5000/api/users/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedUserData),
-      });
-  
-      if (response.ok) {
-        alert('User updated successfully');
-      } else {
-        alert('Failed to update user');
-      }
-    } catch (error) {
-      console.error('Error updating user:', error);
-    }
+  const updatedUserData = {
+    username,
+    first_name: firstName,
+    last_name: lastName,
+    position,
+    role,
+    password,
+    confirmPassword,
   };
+
+  console.log('Payload being sent:', updatedUserData); // Debugging log
+
+  try {
+    const response = await fetch(`http://localhost:5000/api/users/${id}`, {
+      method: 'PUT',
+      credentials: 'include', // Ensure cookies are sent with the request
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updatedUserData),
+    });
+
+    if (response.ok) {
+      alert('User updated successfully');
+    } else {
+      alert('Failed to update user');
+    }
+  } catch (error) {
+    console.error('Error updating user:', error);
+  }
+};
+
 
   return (
     <BaseLayout>

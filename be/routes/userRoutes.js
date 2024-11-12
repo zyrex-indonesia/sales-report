@@ -65,7 +65,7 @@ router.post('/', authMiddleware, adminMiddleware, async (req, res) => {
 });
 
 // Endpoint to update a user by ID (requires authentication and admin privileges)
-router.put('/:id', authMiddleware, async (req, res) => {
+router.put('/:id', authMiddleware, adminMiddleware, async (req, res) => {
   const { id } = req.params;
   const { username, first_name, last_name, position, role, password, confirmPassword } = req.body;
 
@@ -92,6 +92,9 @@ router.put('/:id', authMiddleware, async (req, res) => {
       const hashedPassword = await bcrypt.hash(password, 10);
       user.password = hashedPassword;
     }
+
+    // Log the updated user object before saving
+    console.log('User data before saving:', user);
 
     await user.save();
     res.json({ message: 'User updated successfully', user });
