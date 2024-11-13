@@ -149,6 +149,8 @@ app.use('/api/reports', formRoutes); // Mounts formRoutes under /api/reports
 
 app.post('/api/reports/submit', async (req, res) => {
   try {
+    console.log('Body:', req.body);
+    console.log('File:', req.file);
     const { customerName, date, location, submissionTime, endTime } = req.body;
 
     // Assuming `photo` is being uploaded as binary or file data

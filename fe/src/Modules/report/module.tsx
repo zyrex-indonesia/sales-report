@@ -2,6 +2,20 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import BaseLayout from '@components/layouts/base/index';
 
+// Utility function to format time to "HH:mm:ss" format
+const formatTime = (timeString: string) => {
+  const [time, modifier] = timeString.split(" ");
+  let [hours, minutes] = time.split(":");
+
+  if (modifier === "PM" && hours !== "12") {
+    hours = String(parseInt(hours, 10) + 12);
+  } else if (modifier === "AM" && hours === "12") {
+    hours = "00";
+  }
+
+  return `${hours}:${minutes}:00`; // Assuming zero seconds
+};
+
 const ReportModule: React.FC = () => {
   const [customerName, setCustomerName] = useState('');
   const [date, setDate] = useState('');
@@ -14,15 +28,15 @@ const ReportModule: React.FC = () => {
   useEffect(() => {
     // Capture the current time when the component mounts
     const now = new Date();
-    const formattedTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    const formattedTime = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
     setSubmissionTime(formattedTime);
-
+  
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const latitude = position.coords.latitude;
           const longitude = position.coords.longitude;
-
+  
           try {
             const response = await axios.get(`https://nominatim.openstreetmap.org/reverse`, {
               params: {
@@ -57,41 +71,55 @@ const ReportModule: React.FC = () => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-
+  
+    // Prevent multiple submissions if already submitting
+    if (isSubmitting) return;
+  
+    setIsSubmitting(true);
+  
     // Check if required fields are filled
     if (!customerName || !date || !photo) {
       alert('Please fill in all required fields.');
+      setIsSubmitting(false); // Re-enable the button if submission is prevented
       return;
     }
-
-    setIsSubmitting(true);
-
+  
     const formData = new FormData();
     formData.append('customerName', customerName);
     formData.append('date', date);
     formData.append('location', location);
-    formData.append('submissionTime', submissionTime);
-    formData.append('endTime', endTime);
+    formData.append('submissionTime', formatTime(submissionTime));
+    formData.append('endTime', formatTime(endTime));
     formData.append('photo', photo);
-
+  
     try {
       // Update the endpoint URL to match the backend route
       const response = await axios.post('http://localhost:5000/api/reports/submit', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
-        withCredentials: true, // if your backend requires session authentication
+        withCredentials: true,
       });
       
       console.log('Form submitted successfully:', response.data);
       alert('Form submitted successfully!');
+  
+      // Clear the form fields after successful submission
+      setCustomerName('');
+      setDate('');
+      setLocation('Fetching location...');
+      setPhoto(null);
+      setSubmissionTime(''); // Optionally reset this if you want to capture a new time
+      setEndTime('');
     } catch (error) {
       console.error('Error submitting form:', error);
       alert('Error submitting form. Please try again.');
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false); // Re-enable the submit button after submission is complete
     }
   };
+  
+  
 
   return (
     <BaseLayout>

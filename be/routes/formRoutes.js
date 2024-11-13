@@ -1,40 +1,39 @@
 const express = require('express');
-const multer = require('multer');
 const { authMiddleware } = require('../middleware/auth');
 const Report = require('../models/Report');
-
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Ensure this folder exists or create it
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  },
-});
-const upload = multer({ storage });
-
+const multer = require('multer');
 const router = express.Router();
+const upload = multer({ dest: 'uploads/' });
 
-router.post('/submit', authMiddleware, upload.single('photo'), async (req, res) => {
+// Apply multer middleware to handle file upload
+router.post('/submit', upload.single('photo'), async (req, res) => {
+  console.log('Body:', req.body);  // Log the body data
+  console.log('File:', req.file);  // Log the file data
+  
   const { customerName, date, location, submissionTime, endTime } = req.body;
   const photo = req.file ? req.file.path : null;
 
-  // Validate required fields
   if (!customerName || !date || !photo) {
+    console.error("Missing required fields");
     return res.status(400).json({ message: 'Please fill in all required fields.' });
   }
 
   try {
+    // Convert submissionTime and endTime to a 24-hour format (HH:MM:SS)
+    const formattedSubmissionTime = new Date(`1970-01-01T${submissionTime}`).toISOString().split('T')[1].split('.')[0];
+    const formattedEndTime = endTime ? new Date(`1970-01-01T${endTime}`).toISOString().split('T')[1].split('.')[0] : null;
+
+    // Create a new report
     const report = await Report.create({
       userId: req.session.userId,
       location,
       name: customerName,
       photo,
-      submissionTime,
-      endTime,
+      submissionTime: formattedSubmissionTime,
+      endTime: formattedEndTime,
     });
-    res.status(201).json({ success: true, message: 'Report submitted successfully', report });
+    
+    res.status(201).json({ success: true, message: 'Report submitted successfully' });
   } catch (error) {
     console.error('Error creating report:', error);
     res.status(500).json({ success: false, message: 'Error creating report', error: error.message });
