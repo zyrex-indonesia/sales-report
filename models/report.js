@@ -1,5 +1,5 @@
 const { DataTypes, Model } = require('sequelize');
-const sequelize = require('../config/database'); // Adjust the path based on your setup
+const sequelize = require('../../config/database'); // Adjust the path based on your setup
 const User = require('./User'); // Ensure the path is correct
 
 class Report extends Model {}
@@ -21,14 +21,27 @@ Report.init(
       allowNull: true,
     },
     photo: {
-      type: DataTypes.STRING, // Or use BLOB if you want to store binary data
+      type: DataTypes.STRING, // Store the path to the photo or BLOB for binary data
+      allowNull: true,
+    },
+    submissionTime: {
+      type: DataTypes.TIME, // Store only the time of submission
+      allowNull: false,
+      defaultValue: DataTypes.NOW, // Automatically sets the current time
+    },
+    endTime: {
+      type: DataTypes.TIME, // Store the end time specified by the user
+      allowNull: true,
+    },
+    description: {
+      type: DataTypes.TEXT,
       allowNull: true,
     },
   },
   {
     sequelize, // Pass the Sequelize instance
     modelName: 'Report',
-    timestamps: true, // Add timestamps for createdAt and updatedAt fields
+    timestamps: true, // Adds createdAt and updatedAt fields
   }
 );
 

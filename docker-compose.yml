@@ -2,31 +2,41 @@ version: '3.8'
 
 services:
   backend:
-    build: ./be
+    build:
+      context: ./be
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=example
+      - DB_NAME=sales_report
     ports:
       - "5000:5000"
-    environment:
-      - MONGO_URI=mongodb://mongo:27017/sales_report
     depends_on:
-      - mongo
-    restart: always
+      - db
 
   frontend:
-    build: ./fe
+    build:
+      context: ./fe
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_BACKEND_URL=http://localhost:5000
     ports:
-      - "3000:80"
+      - "3000:3000"
     depends_on:
       - backend
-    restart: always
 
-  mongo:
-    image: mongo:6.0
-    container_name: mongodb
-    volumes:
-      - mongo_data:/data/db
+  db:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: sales_report
     ports:
-      - "27017:27017"
-    restart: always
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
 
 volumes:
-  mongo_data:
+  db_data:

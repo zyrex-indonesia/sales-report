@@ -21,6 +21,7 @@ const ReportModule: React.FC = () => {
   const [date, setDate] = useState('');
   const [location, setLocation] = useState('Fetching location...');
   const [photo, setPhoto] = useState<File | null>(null);
+  const [description, setDescription] = useState(''); // New state for description
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionTime, setSubmissionTime] = useState('');
   const [endTime, setEndTime] = useState('');
@@ -71,16 +72,15 @@ const ReportModule: React.FC = () => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-  
+
     // Prevent multiple submissions if already submitting
     if (isSubmitting) return;
   
     setIsSubmitting(true);
   
-    // Check if required fields are filled
     if (!customerName || !date || !photo) {
       alert('Please fill in all required fields.');
-      setIsSubmitting(false); // Re-enable the button if submission is prevented
+      setIsSubmitting(false);
       return;
     }
   
@@ -91,9 +91,9 @@ const ReportModule: React.FC = () => {
     formData.append('submissionTime', formatTime(submissionTime));
     formData.append('endTime', formatTime(endTime));
     formData.append('photo', photo);
+    formData.append('description', description);  // Ensure description is added here
   
     try {
-      // Update the endpoint URL to match the backend route
       const response = await axios.post('http://localhost:5000/api/reports/submit', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -104,23 +104,21 @@ const ReportModule: React.FC = () => {
       console.log('Form submitted successfully:', response.data);
       alert('Form submitted successfully!');
   
-      // Clear the form fields after successful submission
       setCustomerName('');
       setDate('');
       setLocation('Fetching location...');
       setPhoto(null);
-      setSubmissionTime(''); // Optionally reset this if you want to capture a new time
+      setSubmissionTime('');
       setEndTime('');
+      setDescription('');  // Clear description field
     } catch (error) {
       console.error('Error submitting form:', error);
       alert('Error submitting form. Please try again.');
     } finally {
-      setIsSubmitting(false); // Re-enable the submit button after submission is complete
+      setIsSubmitting(false);
     }
   };
   
-  
-
   return (
     <BaseLayout>
       <form
@@ -218,6 +216,24 @@ const ReportModule: React.FC = () => {
               border: '1px solid #ccc',
               backgroundColor: '#e0e0e0',
               outline: 'none',
+            }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '15px' }}>
+          <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Description:</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            required
+            style={{
+              width: '100%',
+              padding: '10px',
+              borderRadius: '10px',
+              border: '1px solid #ccc',
+              backgroundColor: '#e0e0e0',
+              outline: 'none',
+              resize: 'vertical'
             }}
           />
         </div>

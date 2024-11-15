@@ -1,16 +1,23 @@
 const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../../config/database'); // Adjust the path based on your setup
-const User = require('./User'); // Ensure the path is correct
 
-class Report extends Model {}
+class Report extends Model {
+  static associate(models) {
+    Report.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
+  }
+}
 
 Report.init(
   {
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      references: { model: User, key: 'id' },
+      references: { model: 'User', key: 'id' },
       onDelete: 'CASCADE', // Delete report if associated user is deleted
+    },
+    username: {
+      type: DataTypes.STRING,
+      allowNull: true, // Optional, depending on whether every report must have a username
     },
     location: {
       type: DataTypes.STRING,
@@ -31,6 +38,10 @@ Report.init(
     },
     endTime: {
       type: DataTypes.TIME, // Store the end time specified by the user
+      allowNull: true,
+    },
+    description: {
+      type: DataTypes.TEXT,
       allowNull: true,
     },
   },

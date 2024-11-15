@@ -2,14 +2,31 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 
 // Middleware to check if the user is authenticated via session
-const authMiddleware = (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
   if (!req.session || !req.session.userId) {
     console.log("User is not authenticated");
     return res.status(403).json({ message: 'Not authenticated. Please log in.' });
   }
 
-  console.log("User authenticated:", req.session.userId);
-  next();
+  try {
+    // Fetch user from the database
+    const user = await User.findByPk(req.session.userId);
+    if (!user) {
+      console.log("User not found");
+      return res.status(403).json({ message: 'User not found. Please log in again.' });
+    }
+
+    // Set username in session if not already set
+    req.session.username = user.username;
+    console.log("User authenticated:", req.session.userId, "Username:", req.session.username);
+
+    // Attach the username to req for easier access in other routes
+    req.username = user.username;
+    next();
+  } catch (error) {
+    console.log("Error fetching user data:", error.message);
+    res.status(500).json({ message: 'Error fetching user data' });
+  }
 };
 
 // Middleware to check if the user is an admin

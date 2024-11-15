@@ -31,6 +31,22 @@ User.init(
       type: DataTypes.ENUM('admin', 'user'), // Define possible roles
       defaultValue: 'user',
     },
+    first_name: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    last_name: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    position: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    odoo_batch_id: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   },
   {
     sequelize, // Pass the Sequelize instance

@@ -1,20 +1,23 @@
-# Build stage
-FROM node:16-alpine as build
+# Use a Node.js image for the frontend
+FROM node:18
 
-WORKDIR /usr/src/app
+# Set the working directory
+WORKDIR /app
+
+# Copy package.json and package-lock.json
+COPY package*.json ./
 
 # Install dependencies
-COPY package*.json ./
 RUN npm install
 
-# Copy the rest of the application files
+# Copy the rest of the application code
 COPY . .
 
-# Build the React app
+# Build the frontend for production
 RUN npm run build
 
-# Production stage (NGINX)
-FROM nginx:alpine
-COPY --from=build /usr/src/app/build /usr/share/nginx/html
+# Expose the frontend port
+EXPOSE 3000
 
-EXPOSE 80
+# Start the frontend server
+CMD ["npm", "start"]

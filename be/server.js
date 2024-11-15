@@ -151,7 +151,7 @@ app.post('/api/reports/submit', async (req, res) => {
   try {
     console.log('Body:', req.body);
     console.log('File:', req.file);
-    const { customerName, date, location, submissionTime, endTime } = req.body;
+    const { customerName, date, location, submissionTime, endTime, description } = req.body;
 
     // Assuming `photo` is being uploaded as binary or file data
     const photo = req.file ? req.file.path : null;
@@ -159,12 +159,14 @@ app.post('/api/reports/submit', async (req, res) => {
     // Create a new report entry in the database
     const report = await Report.create({
       userId: req.session.userId,  // Assuming user is authenticated and session contains userId
+      username: req.session.username,
       name: customerName,
       date,
       location,
       submissionTime,
       endTime,
       photo,
+      description,
     });
 
     res.status(200).json({ message: 'Report submitted successfully' });

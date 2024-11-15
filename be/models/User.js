@@ -8,8 +8,15 @@ class User extends Model {
   async matchPassword(enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
   }
+
+  // Define associations in a static method
+  static associate(models) {
+    // Define association with the Report model
+    User.hasMany(models.Report, { foreignKey: 'userId', as: 'reports' });
+  }
 }
 
+// Initialize the User model
 User.init(
   {
     username: {
