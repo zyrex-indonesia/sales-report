@@ -2,6 +2,7 @@
 require('dotenv').config();
 
 const express = require('express');
+const path = require('path');
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
 const bcrypt = require('bcryptjs');
@@ -147,6 +148,8 @@ app.use('/api/users', userRoutes);
 // Use the imported form routes for all report-related requests
 app.use('/api/reports', formRoutes); // Mounts formRoutes under /api/reports
 
+app.use('/uploads', express.static('uploads'));
+
 app.post('/api/reports/submit', async (req, res) => {
   try {
     console.log('Body:', req.body);
@@ -192,6 +195,7 @@ app.post('/login', async (req, res) => {
 
     // Set the session with the user's ID
     req.session.userId = user.id;
+    req.session.role = user.role;
     console.log("Session after login:", req.session); // Log session data for debugging
     res.json({ message: 'Logged in successfully' });
   } catch (error) {

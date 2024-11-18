@@ -8,8 +8,8 @@ const upload = multer({ dest: 'uploads/' });
 
 // Apply multer middleware to handle file upload
 router.post('/submit', authMiddleware, upload.single('photo'), async (req, res) => {
-  console.log('Body:', req.body);  // Log the body data
-  console.log('File:', req.file);  // Log the file data
+  console.log('Body:', req.body); // Log the body data
+  console.log('File:', req.file); // Log the file data
 
   const { customerName, date, location, submissionTime, endTime, description } = req.body;
   const photo = req.file ? req.file.path : null;
@@ -52,45 +52,34 @@ router.post('/submit', authMiddleware, upload.single('photo'), async (req, res) 
   }
 });
 
-// GET endpoint to fetch all reports
+// GET endpoint to fetch all reports or only the user's own reports
 router.get('/', authMiddleware, async (req, res) => {
   try {
-    // Fetch the user to check their role
     const user = await User.findByPk(req.session.userId);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(403).json({ message: 'User not found' });
     }
 
     let reports;
     if (user.role === 'admin') {
-      // If the user is an admin, fetch all reports
-      reports = await Report.findAll({
-        include: [{
-          model: User,
-          as: 'user', // Use the alias defined in the association
-          attributes: ['username']
-        }],
-        attributes: ['id', 'userId', 'username', 'location', 'name', 'photo', 'submissionTime', 'endTime', 'description', 'createdAt']
-      });
+      // Admin: Fetch all reports
+      reports = await Report.findAll();
     } else {
-      // If the user is not an admin, fetch only their own reports
-      reports = await Report.findAll({
-        where: { userId: req.session.userId },
-        include: [{
-          model: User,
-          as: 'user', // Use the alias defined in the association
-          attributes: ['username']
-        }],
-        attributes: ['id', 'userId', 'username', 'location', 'name', 'photo', 'submissionTime', 'endTime', 'description', 'createdAt']
-      });
+      // User: Fetch their own reports
+      reports = await Report.findAll({ where: { userId: req.session.userId } });
     }
+
+    // Update the photo path to include the 'uploads' folder
+    reports = reports.map((report) => ({
+      ...report.toJSON(),
+      photo: report.photo ? `uploads/${report.photo}` : null,
+    }));
 
     res.status(200).json(reports);
   } catch (error) {
     console.error('Error fetching reports:', error);
-    res.status(500).json({ message: 'Error fetching reports', error: error.message });
+    res.status(500).json({ message: 'Error fetching reports' });
   }
 });
-
 
 module.exports = router;

@@ -28,10 +28,10 @@
       "static/chunks/main.js",
       "static/chunks/pages/history.js"
     ],
-    "/user-management": [
+    "/report": [
       "static/chunks/webpack.js",
       "static/chunks/main.js",
-      "static/chunks/pages/user-management.js"
+      "static/chunks/pages/report.js"
     ]
   },
   "ampFirstPages": []
