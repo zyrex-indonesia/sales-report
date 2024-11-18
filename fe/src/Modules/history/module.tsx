@@ -1,3 +1,5 @@
+// src/modules/History/index.tsx
+
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import BaseLayout from '@components/layouts/base';
@@ -57,7 +59,6 @@ const HistoryModule: React.FC = () => {
               boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
               display: 'flex',
               flexDirection: 'column',
-              height: '100%', // Use the full height of the container
             }}
           >
             <div
@@ -108,9 +109,8 @@ const HistoryModule: React.FC = () => {
               </div>
             </div>
             {report.photo && (
-              <div style={{ marginTop: '10px' }}>
                 <img
-                  src={`http://localhost:5000/${report.photo}`} // Adjust path if necessary
+                  src={`http://localhost:5000${report.photo}`}
                   alt="Report"
                   style={{
                     width: '100%',
@@ -120,8 +120,7 @@ const HistoryModule: React.FC = () => {
                     objectFit: 'cover',
                   }}
                 />
-              </div>
-            )}
+              )}
           </div>
         ))}
       </div>

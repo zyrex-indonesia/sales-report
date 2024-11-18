@@ -148,7 +148,7 @@ app.use('/api/users', userRoutes);
 // Use the imported form routes for all report-related requests
 app.use('/api/reports', formRoutes); // Mounts formRoutes under /api/reports
 
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.post('/api/reports/submit', async (req, res) => {
   try {

@@ -66,7 +66,14 @@ const ReportModule: React.FC = () => {
 
   const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
-      setPhoto(event.target.files[0]);
+        const file = event.target.files[0];
+        const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+
+        if (!allowedTypes.includes(file.type)) {
+            alert("Please upload a valid image file (JPEG, JPG, PNG)");
+            return;
+        }
+        setPhoto(file);
     }
   };
 
