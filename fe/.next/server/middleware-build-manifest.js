@@ -20,15 +20,25 @@ self.__BUILD_MANIFEST = {
       "static/chunks/main.js",
       "static/chunks/pages/_error.js"
     ],
-    "/dashboard": [
+    "/add-user": [
       "static/chunks/webpack.js",
       "static/chunks/main.js",
-      "static/chunks/pages/dashboard.js"
+      "static/chunks/pages/add-user.js"
     ],
     "/history": [
       "static/chunks/webpack.js",
       "static/chunks/main.js",
       "static/chunks/pages/history.js"
+    ],
+    "/report": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/report.js"
+    ],
+    "/user-management": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/user-management.js"
     ]
   },
   "ampFirstPages": []

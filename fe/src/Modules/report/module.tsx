@@ -158,7 +158,7 @@ const ReportModule: React.FC = () => {
           />
         </div>
 
-        <div style={{ marginBottom: '15px' }}>
+        {/* <div style={{ marginBottom: '15px' }}>
           <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Date:</label>
           <input
             type="date"
@@ -174,7 +174,7 @@ const ReportModule: React.FC = () => {
               outline: 'none',
             }}
           />
-        </div>
+        </div> */}
 
         <div style={{ marginBottom: '15px' }}>
           <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Submission Time:</label>
