@@ -36,9 +36,6 @@ const HistoryModule: React.FC = () => {
 
   return (
     <BaseLayout>
-      <h1 style={{ textAlign: 'center', marginBottom: '20px', color: '#fff' }}>
-        Submission History
-      </h1>
       <div
         style={{
           display: 'grid',

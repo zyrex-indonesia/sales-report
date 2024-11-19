@@ -8,6 +8,7 @@ const heicConvert = require('heic-convert');
 const path = require('path');
 const fs = require('fs');
 const { utcToZonedTime, format } = require('date-fns-tz');
+const { Op } = require('sequelize');
 const router = express.Router();
 
 
@@ -143,12 +144,55 @@ router.get('/', authMiddleware, async (req, res) => {
       ...report.toJSON(),
       photo: report.photo ? `/${report.photo}` : null, // Add leading slash
     }));
-    
+
     res.status(200).json(reports);
   } catch (error) {
     console.error('Error fetching reports:', error);
     res.status(500).json({ message: 'Error fetching reports' });
   }
 });
+
+router.get('/daily', authMiddleware, async (req, res) => {
+  try {
+    const jakartaOffset = 7 * 60 * 60 * 1000;
+
+    const now = new Date();
+    const jakartaNow = new Date(now.getTime() + jakartaOffset);
+
+    const todayStart = new Date(jakartaNow);
+    todayStart.setHours(0, 0, 0, 0);
+
+    const todayEnd = new Date(todayStart);
+    todayEnd.setDate(todayStart.getDate() + 1);
+
+    const todayStartUTC = new Date(todayStart.getTime() - jakartaOffset);
+    const todayEndUTC = new Date(todayEnd.getTime() - jakartaOffset);
+
+    console.log('Date Range:', { todayStartUTC, todayEndUTC }); // Debug log
+
+    const reports = await Report.findAll({
+      where: {
+        createdAt: {
+          [Op.gte]: todayStartUTC,
+          [Op.lt]: todayEndUTC,
+        },
+      },
+    });
+
+    console.log('Reports Found:', reports.length); // Debug log
+
+    reports.forEach((report) => {
+      if (report.photo && !report.photo.startsWith('uploads/')) {
+        report.photo = `uploads/${report.photo}`;
+      }
+    });
+
+    res.status(200).json(reports);
+  } catch (error) {
+    console.error('Error fetching daily reports:', error);
+    res.status(500).json({ message: 'Error fetching daily reports' });
+  }
+});
+
 
 module.exports = router;
