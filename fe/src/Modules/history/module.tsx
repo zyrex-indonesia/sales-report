@@ -9,13 +9,12 @@ interface ReportData {
   location: string;
   name: string;
   photo: string;
-  submissionTime: string; // Assuming this is stored as a string in the response
-  endTime: string; // Same assumption as submissionTime
-  createdAt: string; // Timestamp returned as a string by the API
+  submissionTime: string;
+  endTime: string;
+  createdAt: string;
   updatedAt: string;
   description: string;
 }
-
 
 const HistoryModule: React.FC = () => {
   const [reports, setReports] = useState<ReportData[]>([]);
@@ -30,7 +29,6 @@ const HistoryModule: React.FC = () => {
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        // Explicitly type the response data
         const response = await axios.get<ReportData[]>(
           'http://localhost:5000/api/reports',
           {
@@ -40,30 +38,28 @@ const HistoryModule: React.FC = () => {
         const data = response.data || [];
         setReports(data);
         setFilteredReports(data);
-  
-        // Extract unique usernames from the reports
+
         const usernames = [...new Set(data.map((report) => report.username))];
         setUniqueUsernames(usernames);
       } catch (error) {
         console.error('Error fetching reports:', error);
       }
     };
-  
-    fetchReports();
-  }, []);  
 
-  // Update filtered reports when the filter changes
+    fetchReports();
+  }, []);
+
   useEffect(() => {
     const filtered = reports.filter((report) => {
       const matchesUsername =
-      filter.username && report.username
-        ? report.username.toLowerCase().includes(filter.username.toLowerCase())
-        : true;
+        filter.username && report.username
+          ? report.username.toLowerCase().includes(filter.username.toLowerCase())
+          : true;
 
-        const matchesDate =
-        filter.date && report.createdAt // Check if both filter.date and createdAt exist
+      const matchesDate =
+        filter.date && report.createdAt
           ? report.createdAt.startsWith(filter.date)
-          : true; // Default to true if no filter is applied or createdAt is null
+          : true;
 
       const matchesCustomerName = filter.customerName
         ? report.name.toLowerCase().includes(filter.customerName.toLowerCase())
@@ -165,8 +161,8 @@ const HistoryModule: React.FC = () => {
 
       <div
         style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))',
+          display: 'flex',
+          flexDirection: 'column',
           gap: '20px',
           padding: '20px',
           maxWidth: '100%',
@@ -183,72 +179,39 @@ const HistoryModule: React.FC = () => {
                 padding: '20px',
                 boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
                 display: 'flex',
-                flexDirection: 'column',
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: '20px',
               }}
             >
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  backgroundColor: '#d3d3d3',
-                  padding: '10px',
-                  borderRadius: '8px',
-                  marginBottom: '10px',
-                }}
-              >
-                <span>
+              <div>
+                {report.photo && (
+                  <img
+                    src={`http://localhost:5000${report.photo}`}
+                    alt="Report"
+                    style={{
+                      width: '150px',
+                      height: '150px',
+                      borderRadius: '10px',
+                      objectFit: 'cover',
+                    }}
+                  />
+                )}
+              </div>
+              <div>
+                <div style={{ marginBottom: '10px' }}>
                   <strong>Username:</strong> {report.username}
-                </span>
-                <span>
-                  <strong>Time:</strong> {report.submissionTime}
-                </span>
-                <span>
+                </div>
+                <div style={{ marginBottom: '10px' }}>
+                  <strong>Customer Name:</strong> {report.name}
+                </div>
+                <div style={{ marginBottom: '10px' }}>
                   <strong>Date:</strong> {new Date(report.createdAt).toLocaleDateString()}
-                </span>
-              </div>
-              <div style={{ marginBottom: '10px', fontSize: '18px' }}>
-                <strong>Customer Name:</strong> {report.name}
-              </div>
-              <div style={{ marginBottom: '10px' }}>
-                <strong>Location:</strong>
-                <div
-                  style={{
-                    backgroundColor: '#e0e0e0',
-                    padding: '5px',
-                    borderRadius: '8px',
-                    marginTop: '5px',
-                  }}
-                >
-                  {report.location}
+                </div>
+                <div style={{ marginBottom: '10px' }}>
+                  <strong>Description:</strong> {report.description}
                 </div>
               </div>
-              <div style={{ marginBottom: '10px' }}>
-                <strong>Description:</strong>
-                <div
-                  style={{
-                    backgroundColor: '#e0e0e0',
-                    padding: '10px',
-                    borderRadius: '8px',
-                    marginTop: '5px',
-                  }}
-                >
-                  {report.description}
-                </div>
-              </div>
-              {report.photo && (
-                <img
-                  src={`http://localhost:5000${report.photo}`}
-                  alt="Report"
-                  style={{
-                    width: '100%',
-                    height: 'auto',
-                    borderRadius: '8px',
-                    maxHeight: '350px',
-                    objectFit: 'cover',
-                  }}
-                />
-              )}
             </div>
           ))
         ) : (

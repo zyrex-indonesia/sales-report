@@ -13,44 +13,38 @@ const LoginModule: React.FC<LoginModuleProps> = ({ onLoginSuccess }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError(null); // Reset error state on new attempt
-
-    if (!username || !password) {
-      setError("Both username and password are required.");
-      setIsLoading(false);
-      return;
-    }
-
+    setError(null);
+  
     try {
       const response = await fetch('http://localhost:5000/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // Important for session-based authentication
+        credentials: 'include',
         body: JSON.stringify({ username, password }),
       });
-
+  
       if (!response.ok) {
-        setError(`Login failed with status: ${response.status}`);
-        setIsLoading(false);
+        const errorText = `Login failed with status: ${response.status}`;
+        console.error(errorText);
+        setError(errorText);
         return;
       }
-
+  
       const data = await response.json();
-
-      // Expecting a success message from server
-      if (data.message === 'Logged in successfully') {
-        console.log("Login successful. Redirecting to dashboard...");
-        onLoginSuccess(); // Trigger parent callback
+      if (data.role) {
+        console.log('Role received:', data.role);
+        localStorage.setItem('role', data.role); // Save role to localStorage
+        onLoginSuccess();
       } else {
-        setError(data.message || 'Login failed. Please try again.');
+        setError('Role is undefined in login response.');
       }
     } catch (error) {
-      console.error("Fetch error: ", error);
-      setError('Failed to connect to the server. Please try again later.');
+      console.error('Error during login:', error);
+      setError('Error connecting to the server.');
     } finally {
       setIsLoading(false);
     }
-  };
+  };    
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-red-800">

@@ -103,21 +103,28 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: false,  // Set to true if using HTTPS
     httpOnly: true,
-    sameSite: 'lax', // Lax mode to allow cookies with same-site requests
-  },
+    secure: false, // Set to true in production with HTTPS
+    sameSite: 'lax', // Prevent CSRF
+    maxAge: 24 * 60 * 60 * 1000 // 1 day
+  }
 }));
 
 // Check-session route
 app.get('/api/users/check-session', (req, res) => {
-  console.log('Session in check-session:', req.session); // Check if userId persists
-  if (req.session.userId) {
-    res.json({ message: 'Session active' });
+  if (req.session && req.session.userId && req.session.role) {
+    console.log('Session is active:', req.session.role); // Debug session data
+    return res.json({
+      message: 'Session active',
+      userId: req.session.userId,
+      role: req.session.role,
+    });
   } else {
-    res.status(401).json({ message: 'Unauthorized' });
+    console.log('No active session found');
+    return res.status(401).json({ message: 'No active session' });
   }
 });
+
 
 
 
@@ -181,9 +188,10 @@ app.post('/api/reports/submit', async (req, res) => {
 
 // Login route
 app.post('/login', async (req, res) => {
-  const { username, password } = req.body;
   try {
+    const { username, password } = req.body;
     const user = await User.findOne({ where: { username } });
+
     if (!user) {
       return res.status(400).json({ message: 'Invalid username or password' });
     }
@@ -193,25 +201,31 @@ app.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid username or password' });
     }
 
-    // Set the session with the user's ID
     req.session.userId = user.id;
-    req.session.role = user.role;
-    console.log("Session after login:", req.session); // Log session data for debugging
-    res.json({ message: 'Logged in successfully' });
+    req.session.role = user.role; // Save role in session
+
+    res.json({ message: 'Logged in successfully', role: user.role }); // Include role in response
   } catch (error) {
+    console.error('Error logging in:', error);
     res.status(500).json({ message: 'Error logging in' });
   }
 });
 
 
 
+
 // Logout route
 app.post('/logout', (req, res) => {
-  req.session.destroy(err => {
-    if (err) return res.status(500).json({ message: 'Error logging out' });
-    res.json({ message: 'Logged out successfully' });
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('Error destroying session:', err);
+      return res.status(500).json({ message: 'Failed to log out' });
+    }
+    res.clearCookie('connect.sid'); // Clear session cookie
+    return res.json({ message: 'Logged out successfully' });
   });
 });
+
 
 // Function to create initial admin user
 const createInitialAdmin = async () => {

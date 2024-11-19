@@ -16,35 +16,47 @@ const formatTime = (timeString: string) => {
   return `${hours}:${minutes}:00`; // Assuming zero seconds
 };
 
+// Utility function to get today's date in "YYYY-MM-DD" format
+const getTodayDate = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 const ReportModule: React.FC = () => {
   const [customerName, setCustomerName] = useState('');
   const [date, setDate] = useState('');
   const [location, setLocation] = useState('Fetching location...');
   const [photo, setPhoto] = useState<File | null>(null);
-  const [description, setDescription] = useState(''); // New state for description
+  const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionTime, setSubmissionTime] = useState('');
   const [endTime, setEndTime] = useState('');
 
   useEffect(() => {
+    // Autofill the date field with today's date
+    setDate(getTodayDate());
+
     // Capture the current time when the component mounts
     const now = new Date();
     const formattedTime = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
     setSubmissionTime(formattedTime);
-  
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const latitude = position.coords.latitude;
           const longitude = position.coords.longitude;
-  
+
           try {
             const response = await axios.get(`https://nominatim.openstreetmap.org/reverse`, {
               params: {
                 lat: latitude,
                 lon: longitude,
-                format: 'json'
-              }
+                format: 'json',
+              },
             });
             const address = response.data.display_name;
             setLocation(address || 'Location not available');
@@ -66,14 +78,14 @@ const ReportModule: React.FC = () => {
 
   const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
-        const file = event.target.files[0];
-        const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+      const file = event.target.files[0];
+      const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
 
-        if (!allowedTypes.includes(file.type)) {
-            alert("Please upload a valid image file (JPEG, JPG, PNG)");
-            return;
-        }
-        setPhoto(file);
+      if (!allowedTypes.includes(file.type)) {
+        alert("Please upload a valid image file (JPEG, JPG, PNG)");
+        return;
+      }
+      setPhoto(file);
     }
   };
 
@@ -82,15 +94,15 @@ const ReportModule: React.FC = () => {
 
     // Prevent multiple submissions if already submitting
     if (isSubmitting) return;
-  
+
     setIsSubmitting(true);
-  
-    if (!customerName || !date || !photo) {
+
+    if (!customerName || !photo) {
       alert('Please fill in all required fields.');
       setIsSubmitting(false);
       return;
     }
-  
+
     const formData = new FormData();
     formData.append('customerName', customerName);
     formData.append('date', date);
@@ -98,8 +110,8 @@ const ReportModule: React.FC = () => {
     formData.append('submissionTime', formatTime(submissionTime));
     formData.append('endTime', formatTime(endTime));
     formData.append('photo', photo);
-    formData.append('description', description);  // Ensure description is added here
-  
+    formData.append('description', description);
+
     try {
       const response = await axios.post('http://localhost:5000/api/reports/submit', formData, {
         headers: {
@@ -107,17 +119,17 @@ const ReportModule: React.FC = () => {
         },
         withCredentials: true,
       });
-      
+
       console.log('Form submitted successfully:', response.data);
       alert('Form submitted successfully!');
-  
+
       setCustomerName('');
-      setDate('');
+      setDate(getTodayDate()); // Reset to today's date
       setLocation('Fetching location...');
       setPhoto(null);
       setSubmissionTime('');
       setEndTime('');
-      setDescription('');  // Clear description field
+      setDescription('');
     } catch (error) {
       console.error('Error submitting form:', error);
       alert('Error submitting form. Please try again.');
@@ -125,7 +137,7 @@ const ReportModule: React.FC = () => {
       setIsSubmitting(false);
     }
   };
-  
+
   return (
     <BaseLayout>
       <form
@@ -158,7 +170,7 @@ const ReportModule: React.FC = () => {
           />
         </div>
 
-        {/* <div style={{ marginBottom: '15px' }}>
+        <div style={{ marginBottom: '15px' }}>
           <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Date:</label>
           <input
             type="date"
@@ -174,7 +186,7 @@ const ReportModule: React.FC = () => {
               outline: 'none',
             }}
           />
-        </div> */}
+        </div>
 
         <div style={{ marginBottom: '15px' }}>
           <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Submission Time:</label>
@@ -240,7 +252,7 @@ const ReportModule: React.FC = () => {
               border: '1px solid #ccc',
               backgroundColor: '#e0e0e0',
               outline: 'none',
-              resize: 'vertical'
+              resize: 'vertical',
             }}
           />
         </div>

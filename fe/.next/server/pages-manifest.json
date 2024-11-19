@@ -2,9 +2,7 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/dashboard": "pages/dashboard.js",
+  "/report": "pages/report.js",
   "/user-management": "pages/user-management.js",
-  "/history": "pages/history.js",
-  "/add-user": "pages/add-user.js",
-  "/report": "pages/report.js"
+  "/dashboard": "pages/dashboard.js"
 }
