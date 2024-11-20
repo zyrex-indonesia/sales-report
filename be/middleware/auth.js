@@ -47,7 +47,7 @@ const adminMiddleware = async (req, res, next) => {
 
 // Controller function to create a new user (admin only)
 const createUser = async (req, res) => {
-  const { username, password, role } = req.body;
+  const { username, password, role, first_name, last_name, position, odoo_batch_id } = req.body;
 
   // Ensure username and password are provided
   if (!username || !password) {
@@ -63,20 +63,29 @@ const createUser = async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Hash the password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-    console.log("Hashed password for new user:", hashedPassword);
-
-    // Create a new user
+    // Create a new user with all fields
     const newUser = await User.create({
       username,
-      password: hashedPassword,
-      role: role || 'user' // Default role to 'user' if not specified
+      password,
+      role: role || 'user', // Default role to 'user' if not specified
+      first_name: first_name || null, // Include first_name if provided, else set to null
+      last_name: last_name || null,  // Include last_name if provided, else set to null
+      position: position || null,    // Include position if provided, else set to null
+      odoo_batch_id: odoo_batch_id || null, // Include odoo_batch_id if provided, else set to null
     });
 
     console.log("User created successfully:", newUser.username);
-    res.status(201).json({ message: 'User created successfully', user: { username: newUser.username, role: newUser.role } });
+    res.status(201).json({
+      message: 'User created successfully',
+      user: {
+        username: newUser.username,
+        role: newUser.role,
+        first_name: newUser.first_name,
+        last_name: newUser.last_name,
+        position: newUser.position,
+        odoo_batch_id: newUser.odoo_batch_id,
+      },
+    });
   } catch (error) {
     console.log("Error creating user:", error.message);
     res.status(500).json({ message: 'Error creating user', error: error.message });

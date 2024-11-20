@@ -9,12 +9,13 @@ const LoginModule: React.FC<LoginModuleProps> = ({ onLoginSuccess }) => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-  
+
     try {
       const response = await fetch('http://localhost:5000/login', {
         method: 'POST',
@@ -22,14 +23,14 @@ const LoginModule: React.FC<LoginModuleProps> = ({ onLoginSuccess }) => {
         credentials: 'include',
         body: JSON.stringify({ username, password }),
       });
-  
+
       if (!response.ok) {
         const errorText = `Login failed with status: ${response.status}`;
         console.error(errorText);
         setError(errorText);
         return;
       }
-  
+
       const data = await response.json();
       if (data.role) {
         console.log('Role received:', data.role);
@@ -44,7 +45,7 @@ const LoginModule: React.FC<LoginModuleProps> = ({ onLoginSuccess }) => {
     } finally {
       setIsLoading(false);
     }
-  };    
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-red-800">
@@ -70,17 +71,24 @@ const LoginModule: React.FC<LoginModuleProps> = ({ onLoginSuccess }) => {
           />
         </div>
 
-        <div className="mb-6 text-left">
+        <div className="mb-6 text-left relative">
           <label htmlFor="password" className="block text-gray-700 font-bold mb-2">Password:</label>
           <input
             id="password"
-            type="password"
+            type={showPassword ? 'text' : 'password'} // Toggle between 'text' and 'password'
             value={password}
             onChange={({ target }) => setPassword(target.value)}
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
             required
             aria-label="Password"
           />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-11 text-sm text-gray-500"
+          >
+            {showPassword ? 'Hide' : 'Show'}
+          </button>
         </div>
 
         <button

@@ -42,7 +42,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 
 // Add a new user (requires authentication and admin privileges)
 router.post('/', authMiddleware, adminMiddleware, async (req, res) => {
-  const { username, role, password } = req.body;
+  const { username, role, password, firstName, lastName, position, odooBatchId } = req.body;
 
   if (!username || !role || !password) {
     return res.status(400).json({ success: false, message: 'Username, role, and password are required' });
@@ -51,16 +51,41 @@ router.post('/', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const existingUser = await User.findOne({ where: { username } });
     if (existingUser) {
+      console.log(`User creation failed: Username "${username}" already exists.`);
       return res.status(400).json({ success: false, message: 'Username already exists' });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = await User.create({ username, role, password: hashedPassword });
+    console.log('Raw Password Received:', password);
 
-    res.status(201).json({ success: true, message: 'User created successfully', user: newUser });
+    // Create the new user
+    const newUser = await User.create({
+      username,
+      role,
+      password,
+      first_name: firstName || null,
+      last_name: lastName || null,
+      position: position || null,
+      odoo_batch_id: odooBatchId || null,
+    });
+
+    console.log('User created successfully:', {
+      id: newUser.id,
+      username: newUser.username,
+      role: newUser.role,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'User created successfully',
+      user: { id: newUser.id, username: newUser.username, role: newUser.role },
+    });
   } catch (error) {
-    console.error("Error creating user:", error.message);
-    res.status(500).json({ success: false, message: 'Error creating user', error: error.message });
+    console.error('Error creating user:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Error creating user',
+      error: error.message,
+    });
   }
 });
 

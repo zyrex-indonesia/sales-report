@@ -11,6 +11,7 @@ const AddUserModule: React.FC = () => {
   const [role, setRole] = useState('user');
   const [position, setPosition] = useState('');
   const [odooBatchId, setOdooBatchId] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
   const router = useRouter();
 
   const handleAddUser = async (e: React.FormEvent) => {
@@ -18,7 +19,7 @@ const AddUserModule: React.FC = () => {
 
     // Check if password and confirmPassword match
     if (password !== confirmPassword) {
-      alert("Passwords do not match.");
+      alert('Passwords do not match.');
       return;
     }
 
@@ -116,18 +117,27 @@ const AddUserModule: React.FC = () => {
               </div>
               <div>
                 <label>Password:</label>
-                <input
-                  type="password"
-                  className="w-full p-2 border rounded mb-4"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required // Password is required
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    className="w-full p-2 border rounded mb-4"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required // Password is required
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-2 top-3 text-sm text-gray-600"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                  >
+                    {showPassword ? 'Hide' : 'Show'}
+                  </button>
+                </div>
               </div>
               <div>
                 <label>Confirm Password:</label>
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   className="w-full p-2 border rounded mb-4"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}

@@ -12,12 +12,16 @@ const LoginPage: React.FC = () => {
           method: 'GET',
           credentials: 'include', // Include session cookie
         });
-  
+
         if (response.ok) {
           const data = await response.json();
           if (data.message === 'Session active') {
-            console.log('Session is active, redirecting to dashboard...');
-            router.push('/dashboard'); // Redirect if session is active
+            console.log('Session is active, redirecting...');
+            if (data.role === 'admin') {
+              router.push('/dashboard'); // Redirect admin to the dashboard
+            } else if (data.role === 'user') {
+              router.push('/report'); // Redirect user to the report page
+            }
           } else {
             console.log('No active session found.');
           }
@@ -30,13 +34,29 @@ const LoginPage: React.FC = () => {
         console.error('Error checking session:', error);
       }
     };
-  
-    checkSession();
-  }, [router]);   // Include `router` in the dependency array
 
-  const onLoginSuccess = () => {
-    console.log("Login successful. Redirecting to dashboard.");
-    router.push('/dashboard');
+    checkSession();
+  }, [router]); // Include `router` in the dependency array
+
+  const onLoginSuccess = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/users/check-session', {
+        method: 'GET',
+        credentials: 'include', // Include session cookie
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Login successful. Redirecting based on role...');
+        if (data.role === 'admin') {
+          router.push('/dashboard'); // Redirect admin to the dashboard
+        } else if (data.role === 'user') {
+          router.push('/report'); // Redirect user to the report page
+        }
+      }
+    } catch (error) {
+      console.error('Error determining role after login:', error);
+    }
   };
 
   return <LoginModule onLoginSuccess={onLoginSuccess} />;

@@ -190,24 +190,33 @@ app.post('/api/reports/submit', async (req, res) => {
 app.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
-    const user = await User.findOne({ where: { username } });
 
+    // Fetch user by username
+    const user = await User.findOne({ where: { username } });
+    console.log('User found:', user);
+
+    // If user does not exist
     if (!user) {
       return res.status(400).json({ message: 'Invalid username or password' });
     }
 
+    // Compare passwords
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log('Password Comparison:', { entered: password, stored: user.password, result: isMatch });
+
+    // If passwords do not match
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid username or password' });
     }
 
+    // Success - Set session and respond
     req.session.userId = user.id;
-    req.session.role = user.role; // Save role in session
+    req.session.role = user.role;
+    return res.json({ message: 'Logged in successfully', role: user.role });
 
-    res.json({ message: 'Logged in successfully', role: user.role }); // Include role in response
   } catch (error) {
-    console.error('Error logging in:', error);
-    res.status(500).json({ message: 'Error logging in' });
+    console.error('Error during login:', error.message);
+    return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
