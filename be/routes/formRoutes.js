@@ -154,27 +154,22 @@ router.get('/', authMiddleware, async (req, res) => {
 
 router.get('/daily', authMiddleware, async (req, res) => {
   try {
-    const jakartaOffset = 7 * 60 * 60 * 1000;
-
+    // Get current time in Jakarta timezone
     const now = new Date();
-    const jakartaNow = new Date(now.getTime() + jakartaOffset);
+    const jakartaNow = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
 
-    const todayStart = new Date(jakartaNow);
-    todayStart.setHours(0, 0, 0, 0);
-
+    // Define start and end of the day in Jakarta timezone
+    const todayStart = new Date(jakartaNow.setHours(0, 0, 0, 0));
     const todayEnd = new Date(todayStart);
     todayEnd.setDate(todayStart.getDate() + 1);
 
-    const todayStartUTC = new Date(todayStart.getTime() - jakartaOffset);
-    const todayEndUTC = new Date(todayEnd.getTime() - jakartaOffset);
-
-    console.log('Date Range:', { todayStartUTC, todayEndUTC }); // Debug log
+    console.log('Jakarta Date Range:', todayStart, todayEnd); // Debug log
 
     const reports = await Report.findAll({
       where: {
         createdAt: {
-          [Op.gte]: todayStartUTC,
-          [Op.lt]: todayEndUTC,
+          [Op.gte]: todayStart, // Start of today
+          [Op.lt]: todayEnd,    // Start of tomorrow
         },
       },
     });
@@ -193,6 +188,5 @@ router.get('/daily', authMiddleware, async (req, res) => {
     res.status(500).json({ message: 'Error fetching daily reports' });
   }
 });
-
 
 module.exports = router;

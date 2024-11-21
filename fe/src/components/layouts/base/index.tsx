@@ -9,8 +9,11 @@ const BaseLayout: React.FC<BaseLayoutProps> = ({ children }) => {
   console.log("BaseLayout is rendering");
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
-      <main>{children}</main>
+      {/* Ensure the navbar spans the full width */}
+      <header className="w-full">
+        <Navbar />
+      </header>
+      <main className="flex-1 w-full">{children}</main>
     </div>
   );
 };

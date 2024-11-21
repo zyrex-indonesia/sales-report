@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import BaseLayout from '@components/layouts/base/index';
 
-// Utility function to format time to "HH:mm:ss" format
 const formatTime = (timeString: string) => {
   const [time, modifier] = timeString.split(" ");
   let [hours, minutes] = time.split(":");
@@ -13,10 +12,9 @@ const formatTime = (timeString: string) => {
     hours = "00";
   }
 
-  return `${hours}:${minutes}:00`; // Assuming zero seconds
+  return `${hours}:${minutes}:00`;
 };
 
-// Utility function to get today's date in "YYYY-MM-DD" format
 const getTodayDate = () => {
   const today = new Date();
   const year = today.getFullYear();
@@ -36,10 +34,7 @@ const ReportModule: React.FC = () => {
   const [endTime, setEndTime] = useState('');
 
   useEffect(() => {
-    // Autofill the date field with today's date
     setDate(getTodayDate());
-
-    // Capture the current time when the component mounts
     const now = new Date();
     const formattedTime = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
     setSubmissionTime(formattedTime);
@@ -60,18 +55,13 @@ const ReportModule: React.FC = () => {
             });
             const address = response.data.display_name;
             setLocation(address || 'Location not available');
-          } catch (error) {
-            console.error('Error fetching location:', error);
+          } catch {
             setLocation('Failed to fetch location');
           }
         },
-        (error) => {
-          console.error('Error fetching location:', error);
-          setLocation('Failed to fetch location');
-        }
+        () => setLocation('Failed to fetch location')
       );
     } else {
-      console.error('Geolocation is not supported by this browser.');
       setLocation('Geolocation not supported');
     }
   }, []);
@@ -92,7 +82,6 @@ const ReportModule: React.FC = () => {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    // Prevent multiple submissions if already submitting
     if (isSubmitting) return;
 
     setIsSubmitting(true);
@@ -113,25 +102,22 @@ const ReportModule: React.FC = () => {
     formData.append('description', description);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/reports/submit', formData, {
+      await axios.post('http://localhost:5000/api/reports/submit', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
         withCredentials: true,
       });
 
-      console.log('Form submitted successfully:', response.data);
       alert('Form submitted successfully!');
-
       setCustomerName('');
-      setDate(getTodayDate()); // Reset to today's date
+      setDate(getTodayDate());
       setLocation('Fetching location...');
       setPhoto(null);
       setSubmissionTime('');
       setEndTime('');
       setDescription('');
-    } catch (error) {
-      console.error('Error submitting form:', error);
+    } catch {
       alert('Error submitting form. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -142,156 +128,103 @@ const ReportModule: React.FC = () => {
     <BaseLayout>
       <form
         onSubmit={handleSubmit}
-        style={{
-          padding: '20px',
-          backgroundColor: '#f5f5f5',
-          borderRadius: '8px',
-          width: '50%',
-          margin: '0 auto',
-          marginTop: '50px',
-          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-        }}
+        className="p-4 mx-auto max-w-lg my-6"
       >
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Customer Name:</label>
-          <input
-            type="text"
-            value={customerName}
-            onChange={(e) => setCustomerName(e.target.value)}
-            required
-            style={{
-              width: '100%',
-              padding: '10px',
-              borderRadius: '10px',
-              border: '1px solid #ccc',
-              backgroundColor: '#e0e0e0',
-              outline: 'none',
-            }}
-          />
-        </div>
+        <h2 className="text-center text-xl font-bold mb-6 text-white mt-12">Report Submission</h2>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Date:</label>
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            required
-            style={{
-              width: '100%',
-              padding: '10px',
-              borderRadius: '10px',
-              border: '1px solid #ccc',
-              backgroundColor: '#e0e0e0',
-              outline: 'none',
-            }}
-          />
-        </div>
+        <div className="space-y-4">
+          {/* Customer Name */}
+          <div className="bg-white rounded-lg p-4 shadow">
+            <label className="block text-sm font-bold mb-1">Customer Name:</label>
+            <input
+              type="text"
+              value={customerName}
+              onChange={(e) => setCustomerName(e.target.value)}
+              required
+              className="w-full p-2 border rounded"
+            />
+          </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Submission Time:</label>
-          <input
-            type="text"
-            value={submissionTime}
-            readOnly
-            style={{
-              width: '100%',
-              padding: '10px',
-              borderRadius: '10px',
-              border: '1px solid #ccc',
-              backgroundColor: '#e0e0e0',
-              outline: 'none',
-            }}
-          />
-        </div>
+          {/* Date */}
+          <div className="bg-white rounded-lg p-4 shadow">
+            <label className="block text-sm font-bold mb-1">Date:</label>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+              className="w-full p-2 border rounded"
+            />
+          </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>End Time:</label>
-          <input
-            type="time"
-            value={endTime}
-            onChange={(e) => setEndTime(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '10px',
-              borderRadius: '10px',
-              border: '1px solid #ccc',
-              backgroundColor: '#e0e0e0',
-              outline: 'none',
-            }}
-          />
-        </div>
+          {/* Time Fields */}
+          <div className="grid grid-cols-2 gap-4 bg-white rounded-lg p-4 shadow">
+            <div>
+              <label className="block text-sm font-bold mb-1">Submission Time:</label>
+              <input
+                type="text"
+                value={submissionTime}
+                readOnly
+                className="w-full p-2 border rounded"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold mb-1">End Time:</label>
+              <input
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                className="w-full p-2 border rounded"
+              />
+            </div>
+          </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Location:</label>
-          <input
-            type="text"
-            value={location}
-            readOnly
-            style={{
-              width: '100%',
-              padding: '10px',
-              borderRadius: '10px',
-              border: '1px solid #ccc',
-              backgroundColor: '#e0e0e0',
-              outline: 'none',
-            }}
-          />
-        </div>
+          {/* Location */}
+          <div className="bg-white rounded-lg p-4 shadow">
+            <label className="block text-sm font-bold mb-1">Location:</label>
+            <input
+              type="text"
+              value={location}
+              readOnly
+              className="w-full p-2 border rounded"
+            />
+          </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Description:</label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            required
-            style={{
-              width: '100%',
-              padding: '10px',
-              borderRadius: '10px',
-              border: '1px solid #ccc',
-              backgroundColor: '#e0e0e0',
-              outline: 'none',
-              resize: 'vertical',
-            }}
-          />
-        </div>
+          {/* Description */}
+          <div className="bg-white rounded-lg p-4 shadow">
+            <label className="block text-sm font-bold mb-1">Description:</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              required
+              className="w-full p-2 border rounded resize-none"
+            />
+          </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>Photo:</label>
-          <input
-            type="file"
-            accept="image/*"
-            capture="environment"
-            onChange={handlePhotoChange}
-            required
-            style={{
-              width: '100%',
-              padding: '10px',
-              borderRadius: '10px',
-              border: '1px solid #ccc',
-              backgroundColor: '#e0e0e0',
-              outline: 'none',
-            }}
-          />
-        </div>
+          {/* Photo Upload */}
+          <div className="bg-white rounded-lg p-4 shadow">
+            <label className="block text-sm font-bold mb-1">Photo:</label>
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handlePhotoChange}
+              required
+              className="w-full p-2 border rounded"
+            />
+          </div>
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          style={{
-            width: '100%',
-            padding: '10px',
-            borderRadius: '10px',
-            backgroundColor: '#4CAF50',
-            color: 'white',
-            fontWeight: 'bold',
-            border: 'none',
-            cursor: isSubmitting ? 'not-allowed' : 'pointer',
-          }}
-        >
-          {isSubmitting ? 'Submitting...' : 'Submit'}
-        </button>
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className={`w-full p-3 rounded font-bold text-white ${
+              isSubmitting ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'
+            }`}
+          >
+            {isSubmitting ? 'Submitting...' : 'Submit'}
+          </button>
+        </div>
       </form>
     </BaseLayout>
   );

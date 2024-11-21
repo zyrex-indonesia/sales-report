@@ -14,37 +14,28 @@ const UserManagement: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter(); // Initialize useRouter for navigation
+  const router = useRouter();
 
   const fetchUsers = async () => {
     try {
-      console.log("Fetching users...");
       const response = await fetch('http://localhost:5000/api/users');
-
-      if (!response.ok) {
-        console.error("Failed to fetch users. Status:", response.status);
-        throw new Error('Failed to fetch users');
-      }
+      if (!response.ok) throw new Error('Failed to fetch users');
 
       const data = await response.json();
-      console.log("Fetched user data:", data);
-
       if (Array.isArray(data)) {
         setUsers(data);
       } else if (data && Array.isArray(data.users)) {
         setUsers(data.users);
       } else {
-        console.warn("No users found in response");
         setUsers([]);
       }
     } catch (error) {
-      console.error("Error fetching users:", error);
       setError(error instanceof Error ? error.message : 'An unknown error occurred');
     }
   };
 
   const navigateToAddUser = () => {
-    router.push('/add-user'); // Navigate to the add-user page
+    router.push('/add-user');
   };
 
   const editUser = async (userId: string, updatedUserData: Partial<User>) => {
@@ -53,24 +44,31 @@ const UserManagement: React.FC = () => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`,
+          Authorization: `Bearer ${localStorage.getItem('authToken') || ''}`,
         },
         body: JSON.stringify(updatedUserData),
       });
       if (!response.ok) throw new Error('Failed to edit user');
 
       const data = await response.json();
-      setUsers(prevUsers => prevUsers.map(user => (user._id === userId || user.id === userId ? data.user : user)));
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user._id === userId || user.id === userId ? data.user : user
+        )
+      );
       setIsEditing(null);
       setError(null);
     } catch (error) {
-      console.error('Error editing user:', error);
-      setError(error instanceof Error ? error.message : 'An unknown error occurred while editing the user.');
+      setError(
+        error instanceof Error
+          ? error.message
+          : 'An unknown error occurred while editing the user.'
+      );
     }
   };
 
   const toggleEditMode = (userId: string | null) => {
-    setIsEditing(prev => (prev === userId ? null : userId));
+    setIsEditing((prev) => (prev === userId ? null : userId));
   };
 
   useEffect(() => {
@@ -79,17 +77,28 @@ const UserManagement: React.FC = () => {
 
   return (
     <BaseLayout>
-      <div className="p-6 bg-red-800 min-h-screen">
+      <div className="p-16 bg-red-800 min-h-screen">
         {error && <p className="text-red-500 mb-4">{error}</p>}
-        <button
-          onClick={navigateToAddUser} // Update button to navigate
-          className="mb-4 px-4 py-2 bg-green-500 text-white font-bold rounded-lg"
-        >
-          Add New User
-        </button>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+        {/* Title */}
+        <h1 className="text-center text-white font-bold mb-8 font-roboto text-2xl sm:text-3xl md:text-4xl mt-6">
+          User Management
+        </h1>
+
+        {/* Add New User Button */}
+        <div className="flex justify-center mb-6">
+          <button
+            onClick={navigateToAddUser}
+            className="px-6 py-3 bg-green-500 text-white font-bold font-roboto rounded-lg hover:bg-green-600 transition duration-300 shadow-md w-full max-w-xs"
+          >
+            Add New User
+          </button>
+        </div>
+
+        {/* User Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {users.length > 0 ? (
-            users.map(user => (
+            users.map((user) => (
               <UserCard
                 key={user._id || user.id}
                 user={{
@@ -97,7 +106,9 @@ const UserManagement: React.FC = () => {
                   username: user.username,
                   role: user.role,
                 }}
-                onEdit={(updatedUserData) => editUser(user._id || user.id || '', updatedUserData)}
+                onEdit={(updatedUserData) =>
+                  editUser(user._id || user.id || '', updatedUserData)
+                }
               />
             ))
           ) : (

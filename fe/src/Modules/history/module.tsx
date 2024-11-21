@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import BaseLayout from '@components/layouts/base';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import BaseLayout from "@components/layouts/base";
 
 interface ReportData {
   id: number;
@@ -21,16 +21,17 @@ const HistoryModule: React.FC = () => {
   const [filteredReports, setFilteredReports] = useState<ReportData[]>([]);
   const [uniqueUsernames, setUniqueUsernames] = useState<string[]>([]);
   const [filter, setFilter] = useState({
-    username: '',
-    date: '',
-    customerName: '',
+    username: "",
+    date: "",
+    customerName: "",
   });
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchReports = async () => {
       try {
         const response = await axios.get<ReportData[]>(
-          'http://localhost:5000/api/reports',
+          "http://localhost:5000/api/reports",
           {
             withCredentials: true,
           }
@@ -42,7 +43,7 @@ const HistoryModule: React.FC = () => {
         const usernames = [...new Set(data.map((report) => report.username))];
         setUniqueUsernames(usernames);
       } catch (error) {
-        console.error('Error fetching reports:', error);
+        console.error("Error fetching reports:", error);
       }
     };
 
@@ -71,44 +72,34 @@ const HistoryModule: React.FC = () => {
     setFilteredReports(filtered);
   }, [filter, reports]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setFilter((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
     <BaseLayout>
-      <h1 style={{ textAlign: 'center', marginBottom: '20px', color: '#fff', fontSize: '2.5rem' }}>
-        Reports History
-      </h1>
+      <h1 className="text-center text-2xl font-bold mb-4 text-white">History</h1>
       <div
+        className="flex flex-wrap gap-4 px-4 py-2"
         style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          padding: '20px',
-          marginBottom: '20px',
-          gap: '20px',
-          backgroundColor: '#f5f5f5',
-          borderRadius: '10px',
+          marginTop: "40px",
+          flexDirection: "column", // Stack filters vertically on small screens
+          alignItems: "stretch", // Ensure filters are the same width
         }}
       >
-        <div>
-          <label htmlFor="username" style={{ fontWeight: 'bold', marginRight: '10px' }}>
+        {/* Filters */}
+        <div className="flex flex-col gap-2 w-full">
+          <label className="block font-bold text-white mb-2">
             Filter by Username:
           </label>
           <select
-            id="username"
             name="username"
             value={filter.username}
             onChange={handleInputChange}
-            style={{
-              padding: '8px',
-              borderRadius: '5px',
-              border: '1px solid #ccc',
-              fontSize: '16px',
-              background: '#fff',
-            }}
+            className="w-full p-2 border rounded bg-gray-100"
           >
             <option value="">All Users</option>
             {uniqueUsernames.map((username) => (
@@ -119,105 +110,109 @@ const HistoryModule: React.FC = () => {
           </select>
         </div>
 
-        <div>
-          <label htmlFor="date" style={{ fontWeight: 'bold', marginRight: '10px' }}>
-            Filter by Date:
-          </label>
+        <div className="flex flex-col gap-2 w-full">
+          <label className="block font-bold text-white mb-2">Filter by Date:</label>
           <input
             type="date"
-            id="date"
             name="date"
             value={filter.date}
             onChange={handleInputChange}
-            style={{
-              padding: '8px',
-              borderRadius: '5px',
-              border: '1px solid #ccc',
-              fontSize: '16px',
-            }}
+            className="w-full p-2 border rounded bg-gray-100"
           />
         </div>
 
-        <div>
-          <label htmlFor="customerName" style={{ fontWeight: 'bold', marginRight: '10px' }}>
+        <div className="flex flex-col gap-2 w-full">
+          <label className="block font-bold text-white mb-2">
             Filter by Customer Name:
           </label>
           <input
             type="text"
-            id="customerName"
             name="customerName"
             placeholder="Enter customer name"
             value={filter.customerName}
             onChange={handleInputChange}
-            style={{
-              padding: '8px',
-              borderRadius: '5px',
-              border: '1px solid #ccc',
-              fontSize: '16px',
-            }}
+            className="w-full p-2 border rounded bg-gray-100"
           />
         </div>
       </div>
 
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '20px',
-          padding: '20px',
-          maxWidth: '100%',
-          margin: '0 auto',
-        }}
-      >
+      {/* Reports */}
+      <div className="mt-6 flex flex-col gap-4 px-4">
         {filteredReports.length > 0 ? (
           filteredReports.map((report) => (
             <div
               key={report.id}
+              className="flex flex-col md:flex-row bg-gray-100 rounded-lg shadow-md p-4 gap-4"
               style={{
-                backgroundColor: '#f5f5f5',
-                borderRadius: '10px',
-                padding: '20px',
-                boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: '20px',
+                marginBottom: "20px",
+                alignItems: "flex-start",
               }}
             >
-              <div>
+              {/* Image Section */}
+              <div className="w-full md:w-1/3 relative group">
                 {report.photo && (
                   <img
                     src={`http://localhost:5000${report.photo}`}
                     alt="Report"
+                    className="rounded-md object-cover cursor-pointer"
                     style={{
-                      width: '150px',
-                      height: '150px',
-                      borderRadius: '10px',
-                      objectFit: 'cover',
+                      width: "100%",
+                      maxHeight: "200px",
+                      transition: "transform 0.3s ease",
                     }}
+                    onClick={() => setPreviewImage(`http://localhost:5000${report.photo}`)}
                   />
                 )}
+                {/* Hover Effect */}
+                <div
+                  className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
+                  onClick={() => setPreviewImage(`http://localhost:5000${report.photo}`)}
+                >
+                  <span className="text-white text-lg font-bold">Click to Preview</span>
+                </div>
               </div>
-              <div>
-                <div style={{ marginBottom: '10px' }}>
+
+              {/* Content Section */}
+              <div className="flex flex-col w-full md:w-2/3">
+                <p>
                   <strong>Username:</strong> {report.username}
-                </div>
-                <div style={{ marginBottom: '10px' }}>
+                </p>
+                <p>
                   <strong>Customer Name:</strong> {report.name}
-                </div>
-                <div style={{ marginBottom: '10px' }}>
+                </p>
+                <p>
+                  <strong>Time:</strong> {report.submissionTime}
+                </p>
+                <p>
                   <strong>Date:</strong> {new Date(report.createdAt).toLocaleDateString()}
-                </div>
-                <div style={{ marginBottom: '10px' }}>
+                </p>
+                <p>
+                  <strong>Location:</strong> {report.location}
+                </p>
+                <p>
                   <strong>Description:</strong> {report.description}
-                </div>
+                </p>
               </div>
             </div>
           ))
         ) : (
-          <p style={{ textAlign: 'center', color: '#000' }}>No matching reports found.</p>
+          <p className="text-center text-gray-300">No matching reports found.</p>
         )}
       </div>
+
+      {/* Image Preview Modal */}
+      {previewImage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
+          onClick={() => setPreviewImage(null)}
+        >
+          <img
+            src={previewImage}
+            alt="Preview"
+            className="max-w-full max-h-full rounded-md"
+          />
+        </div>
+      )}
     </BaseLayout>
   );
 };
