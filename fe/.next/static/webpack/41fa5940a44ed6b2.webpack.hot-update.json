@@ -1,1 +1,0 @@
-{"c":["pages/_app","pages/add-user","webpack"],"r":["pages/edit-user/[id]"],"m":["./node_modules/next/dist/build/webpack/loaders/next-client-pages-loader.js?absolutePagePath=C%3A%5CUsers%5Cuser%5CDocuments%5Csales-report%5Cfe%5Csrc%5Cpages%5Cedit-user%5C%5Bid%5D.tsx&page=%2Fedit-user%2F%5Bid%5D!","./src/Modules/edituser/module.tsx","./src/pages/edit-user/[id].tsx"]}
