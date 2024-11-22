@@ -1,16 +1,16 @@
-# Use a Node.js image for the backend
-FROM node:18
+# Use a Node.js base image
+FROM node:18-alpine
 
-# Set the working directory
+# Set working directory
 WORKDIR /app
 
 # Copy package.json and package-lock.json
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# Install only production dependencies
+RUN npm install --production
 
-# Copy the rest of the application code
+# Copy application files
 COPY . .
 
 # Expose the backend port

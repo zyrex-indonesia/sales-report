@@ -1,6 +1,23 @@
 version: '3.8'
 
 services:
+  nginx-proxy-manager:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: nginx-proxy-manager
+    restart: always
+    depends_on:
+      - backend
+      - frontend
+    environment:
+      DB_SQLITE_FILE: "/data/database.sqlite"
+    volumes:
+      - ./nginx/data:/data
+      - ./nginx/letsencrypt:/etc/letsencrypt
+    ports:
+      - "80:80"      # HTTP
+      - "81:81"      # Admin Panel
+      - "443:443"    # HTTPS
+
   backend:
     build:
       context: ./be
@@ -9,10 +26,10 @@ services:
       - NODE_ENV=production
       - DB_HOST=db
       - DB_USER=root
-      - DB_PASSWORD=example
-      - DB_NAME=sales_report
-    ports:
-      - "5000:5000"
+      - DB_PASSWORD=Zyr3xuser
+      - DB_NAME=sales_report_db
+    expose:
+      - "5000"       # Exposed internally for proxying
     depends_on:
       - db
 
@@ -22,14 +39,15 @@ services:
       dockerfile: Dockerfile
     environment:
       - NODE_ENV=production
-      - REACT_APP_BACKEND_URL=http://localhost:5000
-    ports:
-      - "3000:3000"
+      - REACT_APP_BACKEND_URL=http://backend:5000
+    expose:
+      - "3000"       # Exposed internally for proxying
     depends_on:
       - backend
 
   db:
     image: mysql:8
+    container_name: mysql
     environment:
       MYSQL_ROOT_PASSWORD: example
       MYSQL_DATABASE: sales_report
