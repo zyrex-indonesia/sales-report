@@ -14,21 +14,21 @@ services:
       - "8082:80"      # HTTP remapped
       - "8083:81"      # Admin Panel remapped
       - "4444:443"     # HTTPS remapped
+    networks:
+      - app-network
 
-
-services:
   backend:
     build:
       context: ./be
       dockerfile: Dockerfile
     environment:
-      - NODE_ENV=production
-      - DB_HOST=db
-      - DB_USER=root
-      - DB_PASSWORD=example
-      - DB_NAME=sales_report
-    expose:
-      - "5000"
+      NODE_ENV: production
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: Zyr3xuser  # Match with MySQL root password
+      DB_NAME: sales_report_db # Match with MySQL database name
+    ports:
+      - "5000:5000"  # Map backend port
     depends_on:
       - db
     networks:
@@ -39,9 +39,12 @@ services:
       context: ./fe
       dockerfile: Dockerfile
     environment:
-      - NODE_ENV=production
-    expose:
-      - "3000"
+      NODE_ENV: production
+      REACT_APP_BACKEND_URL: http://backend:5000
+    ports:
+      - "3000:3000"  # Expose frontend to the host
+    depends_on:
+      - backend
     networks:
       - app-network
 
@@ -52,8 +55,10 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: example
       MYSQL_DATABASE: sales_report
-    expose:
-      - "3306"
+      MYSQL_USER: root
+      MYSQL_PASSWORD: example
+    ports:
+      - "3306:3306"  # Map database port
     volumes:
       - db_data:/var/lib/mysql
     networks:
