@@ -6,21 +6,20 @@ services:
     container_name: mysql_database
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: your_root_password
-      MYSQL_DATABASE: your_database_name
-      MYSQL_USER: your_user
-      MYSQL_PASSWORD: your_password
+      MYSQL_ROOT_PASSWORD: Zyr3xuser
+      MYSQL_DATABASE: sales_report_db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: Zyr3xuser
     ports:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
     networks:
-      - database_network
+      - app_network
 
 networks:
-  database_network:
+  app_network:
     driver: bridge
 
 volumes:
   db_data:
-
