@@ -13,6 +13,8 @@ RUN npm install --production
 # Copy the rest of the application files
 COPY . .
 
+COPY ./config ./config
+
 # Expose the backend port
 EXPOSE 5000
 
