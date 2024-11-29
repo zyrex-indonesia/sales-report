@@ -16,6 +16,7 @@ services:
       - "4444:443"     # HTTPS remapped
 
 
+services:
   backend:
     build:
       context: ./be
@@ -24,10 +25,10 @@ services:
       - NODE_ENV=production
       - DB_HOST=db
       - DB_USER=root
-      - DB_PASSWORD=Zyr3xuser
-      - DB_NAME=sales_report_db
+      - DB_PASSWORD=example
+      - DB_NAME=sales_report
     expose:
-      - "5000"       # Exposed internally for proxying
+      - "5000"
     depends_on:
       - db
     networks:
@@ -39,11 +40,8 @@ services:
       dockerfile: Dockerfile
     environment:
       - NODE_ENV=production
-      - REACT_APP_BACKEND_URL=http://backend:5000
     expose:
-      - "3000"       # Exposed internally for proxying
-    depends_on:
-      - backend
+      - "3000"
     networks:
       - app-network
 
@@ -52,18 +50,18 @@ services:
     container_name: mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: example  # Root password for MySQL
-      MYSQL_DATABASE: sales_report  # Default database
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: sales_report
     expose:
-      - "3306"  # Only expose this port to the internal Docker network
+      - "3306"
     volumes:
       - db_data:/var/lib/mysql
     networks:
       - app-network
 
-volumes:
-  db_data:
-
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  db_data:
