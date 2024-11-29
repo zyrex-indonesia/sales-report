@@ -1,14 +1,20 @@
-# Stage 1: Build the Next.js app
-FROM node:18-alpine as build
-WORKDIR /app
-COPY package*.json ./
-RUN npm install --legacy-peer-deps
-COPY . .
-RUN npm run build
+# Use a Node.js base image
+FROM node:18-alpine
 
-# Stage 2: Serve the app using Nginx
-FROM nginx:alpine
-COPY --from=build /app/.next /usr/share/nginx/html
-COPY --from=build /app/public /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+# Set the working directory
+WORKDIR /app
+
+# Copy package.json and package-lock.json
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install --production
+
+# Copy the rest of the application files
+COPY . .
+
+# Expose the backend port
+EXPOSE 5000
+
+# Start the backend server
+CMD ["npm", "start"]
