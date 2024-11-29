@@ -2,7 +2,10 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
+  "/": "pages/index.js",
   "/dashboard": "pages/dashboard.js",
-  "/history": "pages/history.js",
-  "/report": "pages/report.js"
+  "/edit-user/[id]": "pages/edit-user/[id].js",
+  "/report": "pages/report.js",
+  "/user-management": "pages/user-management.js",
+  "/history": "pages/history.js"
 }

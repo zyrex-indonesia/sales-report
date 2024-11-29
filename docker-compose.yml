@@ -1,22 +1,20 @@
 version: '3.8'
 
 services:
-  nginx-proxy-manager:
+  nginx-proxy-manager-new:
     image: 'jc21/nginx-proxy-manager:latest'
-    container_name: nginx-proxy-manager
+    container_name: nginx_proxy_manager_new
     restart: always
-    depends_on:
-      - backend
-      - frontend
     environment:
       DB_SQLITE_FILE: "/data/database.sqlite"
     volumes:
-      - ./nginx/data:/data
-      - ./nginx/letsencrypt:/etc/letsencrypt
+      - ./nginx-new/data:/data
+      - ./nginx-new/letsencrypt:/etc/letsencrypt
     ports:
-      - "80:80"      # HTTP
-      - "81:81"      # Admin Panel
-      - "443:443"    # HTTPS
+      - "8082:80"      # HTTP remapped
+      - "8083:81"      # Admin Panel remapped
+      - "4444:443"     # HTTPS remapped
+
 
   backend:
     build:
@@ -32,6 +30,8 @@ services:
       - "5000"       # Exposed internally for proxying
     depends_on:
       - db
+    networks:
+      - app-network
 
   frontend:
     build:
@@ -44,17 +44,26 @@ services:
       - "3000"       # Exposed internally for proxying
     depends_on:
       - backend
+    networks:
+      - app-network
 
   db:
     image: mysql:8
     container_name: mysql
+    restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: example
-      MYSQL_DATABASE: sales_report
-    ports:
-      - "3306:3306"
+      MYSQL_ROOT_PASSWORD: example  # Root password for MySQL
+      MYSQL_DATABASE: sales_report  # Default database
+    expose:
+      - "3306"  # Only expose this port to the internal Docker network
     volumes:
       - db_data:/var/lib/mysql
+    networks:
+      - app-network
 
 volumes:
   db_data:
+
+networks:
+  app-network:
+    driver: bridge
