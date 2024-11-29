@@ -11,9 +11,9 @@ services:
       - ./nginx-new/data:/data
       - ./nginx-new/letsencrypt:/etc/letsencrypt
     ports:
-      - "8082:80"      # HTTP remapped
-      - "8083:81"      # Admin Panel remapped
-      - "4444:443"     # HTTPS remapped
+      - '80:80' # Public HTTP Port
+      - '443:443' # Public HTTPS Port
+      - '81:81' # Admin Web Port
     networks:
       - app-network
 
