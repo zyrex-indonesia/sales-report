@@ -1,10 +1,9 @@
-# Stage 1: Build the React/Next.js app
+# Stage 1: Build the Next.js app
 FROM node:18-alpine as build
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+RUN npm install --legacy-peer-deps
 COPY . .
-RUN chmod +x ./node_modules/.bin/next
 RUN npm run build
 
 # Stage 2: Serve the app using Nginx
