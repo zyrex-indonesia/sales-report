@@ -55,6 +55,7 @@ User.init(
   {
     sequelize, // Pass the Sequelize instance
     modelName: 'User',
+    tableName: 'users',
     timestamps: true, // Add timestamps for createdAt and updatedAt fields
     hooks: {
       // Hash the password before saving if it was modified
