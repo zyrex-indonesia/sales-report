@@ -48,6 +48,7 @@ Report.init(
   {
     sequelize, // Pass the Sequelize instance
     modelName: 'Report',
+    tableName: 'Reports',
     timestamps: true, // Adds createdAt and updatedAt fields
   }
 );
