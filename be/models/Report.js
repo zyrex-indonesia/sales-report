@@ -1,5 +1,5 @@
 const { DataTypes, Model } = require('sequelize');
-const sequelize = require('sales-report/config/database.js'); // Adjust the path based on your setup
+const sequelize = require('../config/database'); // Adjust the path based on your setup
 
 class Report extends Model {
   static associate(models) {
