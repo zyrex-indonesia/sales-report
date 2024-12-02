@@ -1,5 +1,5 @@
 const { DataTypes, Model } = require('sequelize');
-const sequelize = require('../config/database'); // Adjust the path based on your setup
+const sequelize = require('../be/config/database'); // Adjust the path based on your setup
 const User = require('./User'); // Ensure the path is correct
 
 class Report extends Model {}

@@ -1,6 +1,6 @@
 const { DataTypes, Model } = require('sequelize');
 const bcrypt = require('bcryptjs');
-const sequelize = require('../config/database'); // Adjust the path based on your setup
+const sequelize = require('../be/config/database'); // Adjust the path based on your setup
 
 // Define the User model
 class User extends Model {
