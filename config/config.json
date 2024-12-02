@@ -3,21 +3,21 @@
     "username": "root",               
     "password": "Zyr3xuser",    
     "database": "sales_report_db",     
-    "host": "mysql_temp",
+    "host": "172.17.0.2",
     "dialect": "mysql"
   },
   "test": {
     "username": "root",
     "password": "Zyr3xuser",
     "database": "sales_report_db",
-    "host": "mysql_temp",
+    "host": "172.17.0.2",
     "dialect": "mysql"
   },
   "production": {
     "username": "root",
     "password": "Zyr3xuser",
     "database": "sales_report_db",
-    "host": "mysql_temp",
+    "host": "172.17.0.2",
     "dialect": "mysql"
   }
 }
