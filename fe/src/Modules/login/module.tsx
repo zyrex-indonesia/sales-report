@@ -17,7 +17,7 @@ const LoginModule: React.FC<LoginModuleProps> = ({ onLoginSuccess }) => {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:5000/login', {
+      const response = await fetch('http://api.sales.zyrex.com/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

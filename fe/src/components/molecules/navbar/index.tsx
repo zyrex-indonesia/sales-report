@@ -27,7 +27,7 @@ const Navbar: React.FC = () => {
   const handleLogout = async () => {
     try {
       // Call backend to clear the session
-      const response = await fetch('http://localhost:5000/logout', {
+      const response = await fetch('http://api.sales.zyrex.com/logout', {
         method: 'POST',
         credentials: 'include', // Include session cookie
       });

@@ -102,7 +102,7 @@ const ReportModule: React.FC = () => {
     formData.append('description', description);
 
     try {
-      await axios.post('http://localhost:5000/api/reports/submit', formData, {
+      await axios.post('http://api.sales.zyrex.com/api/reports/submit', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

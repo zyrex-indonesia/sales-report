@@ -31,7 +31,7 @@ const HistoryModule: React.FC = () => {
     const fetchReports = async () => {
       try {
         const response = await axios.get<ReportData[]>(
-          "http://localhost:5000/api/reports",
+          "http://api.sales.zyrex.com/api/reports",
           {
             withCredentials: true,
           }
@@ -152,7 +152,7 @@ const HistoryModule: React.FC = () => {
               <div className="w-full md:w-1/3 relative group">
                 {report.photo && (
                   <img
-                    src={`http://localhost:5000${report.photo}`}
+                    src={`http://api.sales.zyrex.com${report.photo}`}
                     alt="Report"
                     className="rounded-md object-cover cursor-pointer"
                     style={{
@@ -160,13 +160,13 @@ const HistoryModule: React.FC = () => {
                       maxHeight: "200px",
                       transition: "transform 0.3s ease",
                     }}
-                    onClick={() => setPreviewImage(`http://localhost:5000${report.photo}`)}
+                    onClick={() => setPreviewImage(`http://api.sales.zyrex.com${report.photo}`)}
                   />
                 )}
                 {/* Hover Effect */}
                 <div
                   className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
-                  onClick={() => setPreviewImage(`http://localhost:5000${report.photo}`)}
+                  onClick={() => setPreviewImage(`http://api.sales.zyrex.com${report.photo}`)}
                 >
                   <span className="text-white text-lg font-bold">Click to Preview</span>
                 </div>

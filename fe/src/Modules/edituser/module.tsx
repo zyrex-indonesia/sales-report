@@ -19,7 +19,7 @@ const EditUserModule: React.FC = () => {
     if (id) {
       const fetchUser = async () => {
         try {
-          const response = await fetch(`http://localhost:5000/api/users/${id}`, {
+          const response = await fetch(`http://api.sales.zyrex.com/api/users/${id}`, {
             method: 'GET',
             credentials: 'include',
             headers: {
@@ -57,7 +57,7 @@ const EditUserModule: React.FC = () => {
     };
 
     try {
-      const response = await fetch(`http://localhost:5000/api/users/${id}`, {
+      const response = await fetch(`http://api.sales.zyrex.com/api/users/${id}`, {
         method: 'PUT',
         credentials: 'include',
         headers: {

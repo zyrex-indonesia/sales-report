@@ -24,7 +24,7 @@ const DashboardModule: React.FC = () => {
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://http://api.sales.zyrex.com";
         const response = await axios.get<ReportData[]>(`${API_BASE_URL}/api/reports/daily`, {
           withCredentials: true,
         });
@@ -122,10 +122,10 @@ const DashboardModule: React.FC = () => {
                 {report.photo && (
                   <div
                     className="relative w-full md:w-1/3 cursor-pointer group"
-                    onClick={() => openPreview(`http://localhost:5000/${report.photo}`)}
+                    onClick={() => openPreview(`http://api.sales.zyrex.com/${report.photo}`)}
                   >
                     <img
-                      src={`http://localhost:5000/${report.photo}`}
+                      src={`http://api.sales.zyrex.com/${report.photo}`}
                       alt="Report"
                       className="rounded-md object-cover w-full h-auto"
                     />
