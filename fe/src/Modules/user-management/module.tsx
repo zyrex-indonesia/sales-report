@@ -18,7 +18,7 @@ const UserManagement: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('http://api.sales.zyrex.com/api/users');
+      const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/users');
       if (!response.ok) throw new Error('Failed to fetch users');
 
       const data = await response.json();
@@ -40,7 +40,7 @@ const UserManagement: React.FC = () => {
 
   const editUser = async (userId: string, updatedUserData: Partial<User>) => {
     try {
-      const response = await fetch(`http://api.sales.zyrex.com/api/users/${userId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

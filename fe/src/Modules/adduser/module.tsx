@@ -24,7 +24,7 @@ const AddUserModule: React.FC = () => {
     }
 
     try {
-      const response = await fetch('http://api.sales.zyrex.com/api/users', {
+      const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/users', {
         method: 'POST',
         credentials: 'include',
         headers: {
