@@ -1,33 +1,18 @@
-# Stage 1: Build the React/Next.js app
-FROM node:18-alpine AS build
+FROM node:18.17.0-alpine as BUILD_IMAGE
 WORKDIR /app
-
-# Copy package files and install dependencies
-COPY package*.json ./
+COPY package.json package-lock.json ./
 RUN npm install
-
-# Copy the rest of the application files
+RUN npm ci
 COPY . .
-
-# Build the application
 RUN npm run build
+RUN npm prune --production
 
-RUN npm export build
-
-# Stage 2: Serve the app using Nginx
-FROM nginx:alpine
-
-# Copy the built files from the previous stage to the Nginx web root
-COPY --from=build /app/out /usr/share/nginx/html
-
-# Remove the default Nginx configuration
-RUN rm /etc/nginx/conf.d/default.conf
-
-# Add a custom Nginx configuration
-COPY ./nginx.conf /etc/nginx/conf.d/default.conf
-
-# Expose port 80 for serving the application
+FROM node:18.17.0-alpine
+WORKDIR /app
+COPY --from=BUILD_IMAGE /app/package.json ./package.json
+COPY --from=BUILD_IMAGE /app/node_modules ./node_modules
+COPY --from=BUILD_IMAGE /app/.next ./.next
+COPY --from=BUILD_IMAGE /app/public ./public
+COPY --from=BUILD_IMAGE /app/next.config.mjs ./
 EXPOSE 80
-
-# Start Nginx server
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["npm", "start"]
