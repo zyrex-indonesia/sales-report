@@ -21,7 +21,6 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "export":"next export",
     "start": "concurrently \"npm run start --prefix backend\" \"npm run start --prefix frontend\"",
     "build:css": "npx tailwindcss -i ./src/global.css -o ./dist/output.css --watch",
     "test": "react-scripts test",
