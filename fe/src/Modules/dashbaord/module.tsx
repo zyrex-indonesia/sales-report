@@ -24,7 +24,7 @@ const DashboardModule: React.FC = () => {
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://api.sales.zyrex.com";
+        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
         const response = await axios.get<ReportData[]>(`${API_BASE_URL}/api/reports/daily`, {
           withCredentials: true,
         });
