@@ -8,7 +8,7 @@ const LoginPage: React.FC = () => {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/users/check-session', {
+        const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}api/users/check-session', {
           method: 'GET',
           credentials: 'include', // Include session cookie
         });
