@@ -98,7 +98,7 @@ sequelize.authenticate()
 
 // Session setup with additional logging
 app.use(session({
-  secret: '5a14c3f643c00c77b49288c1cf7b9c5c67be39266afa5922da09b2bfe28aa149940b81b05e3892a71d6fffe95015965ea56cac0cd82a673386d4d390e391e2f6',
+  secret: '71fbb5dfb6179b0fa5a513fda105ee3345b7673b89e765635a5e8d3d5372e8d278a7bcd6d215b9b9de0354604a0e99bbd',
   store: sessionStore,
   resave: false,
   saveUninitialized: false,
