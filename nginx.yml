@@ -26,8 +26,8 @@ services:
       # DISABLE_IPV6: 'true'
 
     volumes:
-      - /opt/NGINX_PM/data:/data
-      - /etc/letsencrypt:/etc/letsencrypt
+      - /data:/opt/nginx-proxy-manager/data 
+      - ./letsencrypt:/etc/letsencrypt  
     networks:
       - development
 
