@@ -12,6 +12,8 @@ COPY . .
 # Build the application
 RUN npm run build
 
+RUN npm export build
+
 # Stage 2: Serve the app using Nginx
 FROM nginx:alpine
 
