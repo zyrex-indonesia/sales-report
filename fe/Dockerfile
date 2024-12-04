@@ -1,4 +1,4 @@
-FROM node:18.17.0-alpine as BUILD_IMAGE
+FROM node:18.18-alpine as BUILD_IMAGE
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm install
@@ -7,7 +7,7 @@ COPY . .
 RUN npm run build
 RUN npm prune --production
 
-FROM node:18.17.0-alpine
+FROM node:18.18-alpine
 WORKDIR /app
 COPY --from=BUILD_IMAGE /app/package.json ./package.json
 COPY --from=BUILD_IMAGE /app/node_modules ./node_modules
