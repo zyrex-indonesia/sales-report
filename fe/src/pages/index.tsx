@@ -40,7 +40,7 @@ const LoginPage: React.FC = () => {
 
   const onLoginSuccess = async () => {
     try {
-      const response = await fetch('${process.env.NEXT_PUBLIC_API_URL}/api/users/check-session', {
+      const response = await fetch('https://api.sales.zyrex.com/api/users/check-session', {
         method: 'GET',
         credentials: 'include', // Include session cookie
       });

@@ -122,10 +122,10 @@ const DashboardModule: React.FC = () => {
                 {report.photo && (
                   <div
                     className="relative w-full md:w-1/3 cursor-pointer group"
-                    onClick={() => openPreview(`${process.env.NEXT_PUBLIC_API_URL}/${report.photo}`)}
+                    onClick={() => openPreview(`https://api.sales.zyrex.com/${report.photo}`)}
                   >
                     <img
-                      src={`${process.env.NEXT_PUBLIC_API_URL}/${report.photo}`}
+                      src={`https://api.sales.zyrex.com/${report.photo}`}
                       alt="Report"
                       className="rounded-md object-cover w-full h-auto"
                     />
