@@ -19,7 +19,7 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: 'https://sales.zyrex.com', // Allow requests from your frontend origin
+    origin: 'https://sales.zyrex.com/', // Allow requests from your frontend origin
     credentials: true, // Allow cookies and credentials
   })
 );
