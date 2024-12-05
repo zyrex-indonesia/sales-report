@@ -177,7 +177,7 @@ app.post('/api/reports/submit', async (req, res) => {
   }
 });
 
-app.post('/login', async (req, res) => {
+app.post('/api/login', async (req, res) => {
   try {
     const { username, password } = req.body;
 
