@@ -23,16 +23,10 @@ app.use(
     credentials: true, // Allow cookies and credentials
   })
 );
-
-app.use((req, res, next) => {
+app.use((req, next) => {
   console.log(req.cookies); // Requires cookie-parser middleware
   next();
 });
-
-sessionStore.get('cct9nOPL8MIXQocmgSKs_Udd4XIJXt6N', (session) => {
-  console.log(session);
-});
-
 
 const sessionStore = new MySQLStore({
   host: '172.17.0.2',
