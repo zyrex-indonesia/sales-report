@@ -8,7 +8,7 @@ const LoginPage: React.FC = () => {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const response = await fetch('https://api.sales.zyrex.com/api/users/check-session', {
+        const response = await fetch('/api/users/check-session', {
           method: 'GET',
           credentials: 'include', // Include session cookie
         });
@@ -40,7 +40,7 @@ const LoginPage: React.FC = () => {
 
   const onLoginSuccess = async () => {
     try {
-      const response = await fetch('https://api.sales.zyrex.com/api/users/check-session', {
+      const response = await fetch('/api/users/check-session', {
         method: 'GET',
         credentials: 'include', // Include session cookie
       });
