@@ -188,9 +188,8 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid username or password' });
     }
 
-    // Compare entered password with hashed password in database
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
+    // Compare raw passwords (no hashing)
+    if (user.password !== password) {
       return res.status(400).json({ message: 'Invalid username or password' });
     }
 
@@ -199,12 +198,12 @@ app.post('/api/login', async (req, res) => {
     req.session.role = user.role;
 
     return res.json({ message: 'Logged in successfully', role: user.role });
-
   } catch (error) {
     console.error('Error during login:', error.message);
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
+
 
 
 // Logout route
