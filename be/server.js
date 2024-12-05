@@ -28,7 +28,7 @@ const sessionStore = new MySQLStore({
 
 // CORS setup with debugging
 app.use(cors({
-  origin: 'https://172.17.0.3:3000', // Your frontend origin
+  origin: 'https://sales.zyrex.com/', // Your frontend origin
   credentials: true // Allow credentials to be sent
 }));
 
