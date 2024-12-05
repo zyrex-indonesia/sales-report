@@ -186,7 +186,7 @@ app.post('/api/reports/submit', async (req, res) => {
   }
 });
 
-// Login route
+// Login route (no CORS, direct password check)
 app.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -200,12 +200,8 @@ app.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid username or password' });
     }
 
-    // Compare passwords
-    const isMatch = await bcrypt.compare(password, user.password);
-    console.log('Password Comparison:', { entered: password, stored: user.password, result: isMatch });
-
-    // If passwords do not match
-    if (!isMatch) {
+    // Direct password comparison (assuming already hashed in the database)
+    if (password !== user.password) {
       return res.status(400).json({ message: 'Invalid username or password' });
     }
 
@@ -219,6 +215,7 @@ app.post('/login', async (req, res) => {
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
+
 
 
 
