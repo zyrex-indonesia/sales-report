@@ -37,7 +37,9 @@ app.use((req, res, next) => {
 // CORS setup with debugging
 app.use(cors({
   origin: 'https://sales.zyrex.com', // Your frontend origin
-  credentials: true // Allow credentials to be sent
+  credentials: true, // Allow credentials to be sent
+  methods: "GET, POST, PUT, DELETE, OPTIONS",
+  allowedHeaders: "Content-Type, Authorization",
 }));
 
 const PORT = process.env.PORT || 5000;
