@@ -10,6 +10,7 @@ const LoginPage: React.FC = () => {
       try {
         const response = await fetch('https://api.sales.zyrex.com/api/users/check-session', {
           method: 'GET',
+          mode: 'no-cors',
           credentials: 'include', // Include session cookie
         });
 
@@ -42,6 +43,7 @@ const LoginPage: React.FC = () => {
     try {
       const response = await fetch('https://api.sales.zyrex.com/api/users/check-session', {
         method: 'GET',
+        mode: 'no-cors',
         credentials: 'include', // Include session cookie
       });
 

@@ -11,6 +11,7 @@ const formRoutes = require('./routes/formRoutes');
 const Report = require('./models/Report'); // Import the Report model
 const fs = require('fs');
 const mysql = require('mysql2');
+const bcrypt = require('bcryptjs');
 
 const app = express();
 app.use(express.json());
@@ -181,13 +182,22 @@ app.post('/api/login', async (req, res) => {
   try {
     const { username, password } = req.body;
 
+    // Fetch user by username
     const user = await User.findOne({ where: { username } });
-    if (!user || password !== user.password) {
+    if (!user) {
       return res.status(400).json({ message: 'Invalid username or password' });
     }
 
+    // Compare entered password with hashed password in database
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid username or password' });
+    }
+
+    // Save session data
     req.session.userId = user.id;
     req.session.role = user.role;
+
     return res.json({ message: 'Logged in successfully', role: user.role });
 
   } catch (error) {
@@ -195,9 +205,6 @@ app.post('/api/login', async (req, res) => {
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
-
-
-
 
 
 // Logout route
