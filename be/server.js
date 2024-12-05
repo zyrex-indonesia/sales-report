@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 const express = require('express');
+const cors = require('cors'); // Add CORS middleware
 const path = require('path');
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
@@ -15,6 +16,13 @@ const bcrypt = require('bcryptjs');
 
 const app = express();
 app.use(express.json());
+
+app.use(
+  cors({
+    origin: 'https://sales.zyrex.com', // Allow requests from your frontend origin
+    credentials: true, // Allow cookies and credentials
+  })
+);
 
 const sessionStore = new MySQLStore({
   host: '172.17.0.2',
