@@ -17,7 +17,7 @@ const app = express();
 app.use(express.json());
 
 const sessionStore = new MySQLStore({
-  host: '172.17.0.4',
+  host: '172.17.0.2',
   port: 3306,
   user: 'root',
   password: 'Zyr3xuser',
@@ -28,7 +28,7 @@ const PORT = process.env.PORT || 5000;
 
 // Create a connection to the MySQL database
 const connection = mysql.createConnection({
-  host: '172.17.0.4',  // Update with your database host
+  host: '172.17.0.2',  // Update with your database host
   user: 'root',       // Update with your MySQL username
   password: 'Zyr3xuser', // Update with your MySQL password
   database: 'sales_report_db' // Update with your MySQL database name

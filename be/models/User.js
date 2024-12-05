@@ -1,12 +1,11 @@
 const { DataTypes, Model } = require('sequelize');
-const bcrypt = require('bcryptjs');
 const sequelize = require('../config/database'); // Adjust the path based on your setup
 
 // Define the User model
 class User extends Model {
-  // Method to compare password during login
-  async matchPassword(enteredPassword) {
-    return await bcrypt.compare(enteredPassword, this.password);
+  // Method to compare password during login (no hashing)
+  matchPassword(enteredPassword) {
+    return enteredPassword === this.password; // Direct comparison
   }
 
   // Define associations in a static method
@@ -56,16 +55,6 @@ User.init(
     sequelize, // Pass the Sequelize instance
     modelName: 'User',
     timestamps: true, // Add timestamps for createdAt and updatedAt fields
-    hooks: {
-      // Hash the password before saving if it was modified
-      beforeSave: async (user) => {
-        if (user.changed('password')) {
-          const salt = await bcrypt.genSalt(10);
-          user.password = await bcrypt.hash(user.password, salt);
-          console.log(`Password hashed for user: ${user.username}`);
-        }
-      },
-    },
   }
 );
 
