@@ -19,7 +19,7 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: 'https://sales.zyrex.com/', // Allow requests from your frontend origin
+    origin: 'https://sales.zyrex.com', // Allow requests from your frontend origin
     credentials: true, // Allow cookies and credentials
   })
 );
@@ -104,7 +104,7 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: true, // Set to true in production with HTTPS
+    secure: process.env.NODE_ENV === 'production', // Set to true in production with HTTPS
     sameSite: 'none', // Prevent CSRF
     maxAge: 24 * 60 * 60 * 1000 // 1 day
   }
