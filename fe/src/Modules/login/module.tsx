@@ -19,7 +19,7 @@ const LoginModule: React.FC<LoginModuleProps> = ({ onLoginSuccess }) => {
     try {
       const response = await fetch('https://api.sales.zyrex.com/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Origin: "https://sales.zyrex.com", },
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ username, password }),
       });
