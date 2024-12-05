@@ -52,22 +52,22 @@ const connection = mysql.createConnection({
   database: 'sales_report_db' // Update with your MySQL database name
 });
 
-function initializeDatabase() {
-  fs.readFile('setup.sql', 'utf-8', (err, sql) => {
-    if (err) {
-      console.error('Error reading SQL file:', err);
-      return;
-    }
+// function initializeDatabase() {
+//   fs.readFile('setup.sql', 'utf-8', (err, sql) => {
+//     if (err) {
+//       console.error('Error reading SQL file:', err);
+//       return;
+//     }
 
-    connection.query(sql, (error, results) => {
-      if (error) {
-        console.error('Error executing SQL file:', error);
-        return;
-      }
-      console.log('Database setup complete.');
-    });
-  });
-}
+//     connection.query(sql, (error, results) => {
+//       if (error) {
+//         console.error('Error executing SQL file:', error);
+//         return;
+//       }
+//       console.log('Database setup complete.');
+//     });
+//   });
+// }
 
 // Check if tables already exist, then initialize if needed
 connection.connect((err) => {
