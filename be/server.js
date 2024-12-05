@@ -1,12 +1,9 @@
-// server.js
 require('dotenv').config();
 
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
-const bcrypt = require('bcryptjs');
-const cors = require('cors');
 const Sequelize = require('sequelize');
 const User = require('./models/User');
 const userRoutes = require('./routes/userRoutes'); // Import user routes
@@ -25,12 +22,6 @@ const sessionStore = new MySQLStore({
   password: 'Zyr3xuser',
   database: 'sales_report_db',
 });
-
-// CORS setup with debugging
-app.use(cors({
-  origin: 'https://sales.zyrex.com/', // Your frontend origin
-  credentials: true // Allow credentials to be sent
-}));
 
 const PORT = process.env.PORT || 5000;
 
@@ -186,26 +177,15 @@ app.post('/api/reports/submit', async (req, res) => {
   }
 });
 
-// Login route (no CORS, direct password check)
 app.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    // Fetch user by username
     const user = await User.findOne({ where: { username } });
-    console.log('User found:', user);
-
-    // If user does not exist
-    if (!user) {
+    if (!user || password !== user.password) {
       return res.status(400).json({ message: 'Invalid username or password' });
     }
 
-    // Direct password comparison (assuming already hashed in the database)
-    if (password !== user.password) {
-      return res.status(400).json({ message: 'Invalid username or password' });
-    }
-
-    // Success - Set session and respond
     req.session.userId = user.id;
     req.session.role = user.role;
     return res.json({ message: 'Logged in successfully', role: user.role });
