@@ -112,10 +112,9 @@ router.put('/:id', authMiddleware, adminMiddleware, async (req, res) => {
     user.position = position || user.position;
     user.role = role || user.role;
 
-    // Update the password if provided
+    // Update the password if provided (no additional hashing here)
     if (password) {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      user.password = hashedPassword;
+      user.password = password;
     }
 
     // Log the updated user object before saving
