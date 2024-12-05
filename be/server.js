@@ -19,32 +19,24 @@ const app = express();
 app.use(express.json());
 
 const sessionStore = new MySQLStore({
-  host: '172.17.0.2',
+  host: '172.17.0.4',
   port: 3306,
   user: 'root',
   password: 'Zyr3xuser',
   database: 'sales_report_db',
 });
 
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*"); // Allow all origins
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization");
-  res.header("Access-Control-Allow-Credentials", "true");
-  next();
-});
-
 // CORS setup with debugging
 app.use(cors({
-  origin: 'https://sales.zyrex.com', // Your frontend origin
-  credentials: true, // Allow credentials to be sent
+  origin: 'https://172.17.0.3:3000', // Your frontend origin
+  credentials: true // Allow credentials to be sent
 }));
 
 const PORT = process.env.PORT || 5000;
 
 // Create a connection to the MySQL database
 const connection = mysql.createConnection({
-  host: '172.17.0.2',  // Update with your database host
+  host: '172.17.0.4',  // Update with your database host
   user: 'root',       // Update with your MySQL username
   password: 'Zyr3xuser', // Update with your MySQL password
   database: 'sales_report_db' // Update with your MySQL database name
@@ -76,7 +68,7 @@ connection.connect((err) => {
   console.log('Connected to MySQL.');
 
   // Check if the "users" table exists
-  connection.query("SHOW TABLES LIKE 'users'", (err) => {
+  connection.query("SHOW TABLES LIKE 'users'", (err, result) => {
     if (err) throw err;
 
     // If "users" table doesn't exist, run the SQL setup file
@@ -95,7 +87,7 @@ const sequelize = new Sequelize(
   process.env.DB_USER,
   process.env.DB_PASSWORD,
   {
-    host: process.env.DB_HOST || 'mysql_temp',
+    host: process.env.DB_HOST || '127.0.0.1',
     dialect: 'mysql',
   }
 );
@@ -106,7 +98,7 @@ sequelize.authenticate()
 
 // Session setup with additional logging
 app.use(session({
-  secret: '71fbb5dfb6179b0fa5a513fda105ee3345b7673b89e765635a5e8d3d5372e8d278a7bcd6d215b9b9de0354604a0e99bbd',
+  secret: '5a14c3f643c00c77b49288c1cf7b9c5c67be39266afa5922da09b2bfe28aa149940b81b05e3892a71d6fffe95015965ea56cac0cd82a673386d4d390e391e2f6',
   store: sessionStore,
   resave: false,
   saveUninitialized: false,
