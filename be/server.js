@@ -98,14 +98,14 @@ sequelize.authenticate()
 
 // Session setup with additional logging
 app.use(session({
-  secret: '5a14c3f643c00c77b49288c1cf7b9c5c67be39266afa5922da09b2bfe28aa149940b81b05e3892a71d6fffe95015965ea56cac0cd82a673386d4d390e391e2f6',
+  secret: process.env.SESSION_SECRET,
   store: sessionStore,
   resave: false,
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', // Set to true in production with HTTPS
-    sameSite: 'none', // Prevent CSRF
+    secure: false, // Set to true in production with HTTPS
+    sameSite: 'lax', // Prevent CSRF
     maxAge: 24 * 60 * 60 * 1000 // 1 day
   }
 }));
