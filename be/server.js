@@ -188,7 +188,7 @@ app.post('/api/reports/submit', async (req, res) => {
   }
 });
 
-app.post('https://api.sales.zyrex.com/api/login', async (req, res) => {
+app.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
 
