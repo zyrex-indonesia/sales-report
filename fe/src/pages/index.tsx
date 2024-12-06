@@ -18,9 +18,9 @@ const LoginPage: React.FC = () => {
           if (data.message === 'Session active') {
             console.log('Session is active, redirecting...');
             if (data.role === 'admin') {
-              router.push('https://sales.zyrex.com/dashboard'); // Redirect admin to the dashboard
+              router.push('/dashboard'); // Redirect admin to the dashboard
             } else if (data.role === 'user') {
-              router.push('https://sales.zyrex.com/report'); // Redirect user to the report page
+              router.push('/report'); // Redirect user to the report page
             }
           } else {
             console.log('No active session found.');
@@ -49,9 +49,9 @@ const LoginPage: React.FC = () => {
         const data = await response.json();
         console.log('Login successful. Redirecting based on role...');
         if (data.role === 'admin') {
-          router.push('https://sales.zyrex.com/dashboard'); // Redirect admin to the dashboard
+          router.push('/dashboard'); // Redirect admin to the dashboard
         } else if (data.role === 'user') {
-          router.push('https://sales.zyrex.com/report'); // Redirect user to the report page
+          router.push('/report'); // Redirect user to the report page
         }
       }
     } catch (error) {
