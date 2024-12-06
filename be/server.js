@@ -19,10 +19,12 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: 'https://sales.zyrex.com', // Allow requests from your frontend origin
-    credentials: true, // Allow cookies and credentials
+    origin: ['http://sales.zyrex.com', 'https://sales.zyrex.com'], // Allow both http and https
+    credentials: true,
   })
 );
+
+app.options('*', cors());
 
 const sessionStore = new MySQLStore({
   host: '172.17.0.2',
