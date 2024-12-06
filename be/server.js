@@ -106,7 +106,7 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: false, // Set to true in production with HTTPS
+    secure: true, // Set to true in production with HTTPS
     sameSite: 'lax', // Prevent CSRF
     maxAge: 24 * 60 * 60 * 1000 // 1 day
   }

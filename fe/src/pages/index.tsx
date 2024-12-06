@@ -12,31 +12,29 @@ const LoginPage: React.FC = () => {
           method: 'GET',
           credentials: 'include', // Include session cookie
         });
-
+  
         if (response.ok) {
           const data = await response.json();
           if (data.message === 'Session active') {
-            console.log('Session is active, redirecting...');
+            console.log('Session active:', data.role);
             if (data.role === 'admin') {
-              router.push('/dashboard'); // Redirect admin to the dashboard
+              router.replace('/dashboard'); // Use replace to avoid infinite loops
             } else if (data.role === 'user') {
-              router.push('/report'); // Redirect user to the report page
+              router.replace('/report');
             }
           } else {
             console.log('No active session found.');
           }
         } else {
-          console.log('Session is not active:', response.status);
-          localStorage.removeItem('authToken'); // Clear any stale tokens
-          localStorage.removeItem('role');
+          console.error('Failed to check session:', response.status);
         }
       } catch (error) {
         console.error('Error checking session:', error);
       }
     };
-
+  
     checkSession();
-  }, [router]); // Include `router` in the dependency array
+  }, [router]);   // Include `router` in the dependency array
 
   const onLoginSuccess = async () => {
     try {
