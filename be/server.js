@@ -107,13 +107,13 @@ app.use(session({
   cookie: {
     httpOnly: true,
     secure: true, // Set to true in production with HTTPS
-    sameSite: 'lax', // Prevent CSRF
+    sameSite: 'none', // Prevent CSRF
     maxAge: 24 * 60 * 60 * 1000 // 1 day
   }
 }));
 
 // Check-session route
-app.get('https://api.sales.zyrex.com/api/users/check-session', (req, res) => {
+app.get('/api/users/check-session', (req, res) => {
   console.log('Session data:', req.session);
   if (req.session && req.session.userId && req.session.role) {
     console.log('Session is active:', req.session.role); // Debug session data
