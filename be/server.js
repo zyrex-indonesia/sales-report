@@ -107,7 +107,7 @@ app.use(session({
   cookie: {
     httpOnly: true,
     secure: true, // Set to true in production with HTTPS
-    sameSite: 'lax', // Prevent CSRF
+    sameSite: 'none', // Prevent CSRF
     maxAge: 24 * 60 * 60 * 1000 // 1 day
   }
 }));
