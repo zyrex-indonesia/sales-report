@@ -107,7 +107,7 @@ app.use(session({
   cookie: {
     httpOnly: true,
     secure: true, // Set to true in production with HTTPS
-    sameSite: 'none', // Prevent CSRF
+    sameSite: 'lax', // Prevent CSRF
     maxAge: 24 * 60 * 60 * 1000 // 1 day
   }
 }));
@@ -207,6 +207,14 @@ app.post('/login', async (req, res) => {
     // Save session data
     req.session.userId = user.id;
     req.session.role = user.role;
+
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({ message: 'Session save failed' });
+      }
+      res.json({ message: 'Logged in successfully', role: user.role });
+    });
 
     return res.json({ message: 'Logged in successfully', role: user.role });
   } catch (error) {
