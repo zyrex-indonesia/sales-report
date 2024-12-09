@@ -1,46 +1,70 @@
 const User = require('../models/User');
 
-// Middleware to check if the user is authenticated via session
+// Middleware to check if the user is authenticated based on credentials
 const authMiddleware = async (req, res, next) => {
-  if (!req.session || !req.session.userId) {
-    console.log("User is not authenticated");
-    return res.status(403).json({ message: 'Not authenticated. Please log in.' });
-  }
-
   try {
-    // Fetch user from the database
-    const user = await User.findByPk(req.session.userId);
-    if (!user) {
-      console.log("User not found");
-      return res.status(403).json({ message: 'User not found. Please log in again.' });
+    const { username, password } = req.headers; // Extract credentials from headers
+
+    if (!username || !password) {
+      console.log('Authentication failed: Missing username or password');
+      return res.status(403).json({ message: 'Not authenticated. Please provide username and password.' });
     }
 
-    // Set username in session if not already set
-    req.session.username = user.username;
-    console.log("User authenticated:", req.session.userId, "Username:", req.session.username);
+    // Fetch the user from the database using the provided username
+    const user = await User.findOne({ where: { username } });
 
-    // Attach the username to req for easier access in other routes
-    req.username = user.username;
+    if (!user || user.password !== password) {
+      console.log('Authentication failed: Invalid credentials');
+      return res.status(403).json({ message: 'Invalid username or password. Please try again.' });
+    }
+
+    console.log('User authenticated:', user.username);
+
+    // Attach user data to the request object for use in other routes
+    req.user = {
+      id: user.id,
+      username: user.username,
+      role: user.role,
+    };
+
     next();
   } catch (error) {
-    console.log("Error fetching user data:", error.message);
-    res.status(500).json({ message: 'Error fetching user data' });
+    console.log('Error during authentication:', error.message);
+    res.status(500).json({ message: 'Error during authentication', error: error.message });
   }
 };
 
 // Middleware to check if the user is an admin
 const adminMiddleware = async (req, res, next) => {
   try {
-    const user = await User.findByPk(req.session.userId); // Use the session-stored user ID
-    if (!user || user.role !== 'admin') {
-      console.log("Access denied: User is not an admin");
-      return res.status(403).json({ message: 'Access denied. Admins only' });
+    const { username, password } = req.headers; // Extract credentials from headers
+
+    if (!username || !password) {
+      console.log('Access denied: Missing username or password');
+      return res.status(403).json({ message: 'Access denied. Please provide username and password.' });
     }
-    console.log("Admin access granted");
+
+    // Fetch the user from the database using the provided username
+    const user = await User.findOne({ where: { username } });
+
+    if (!user || user.password !== password || user.role !== 'admin') {
+      console.log('Access denied: User is not an admin');
+      return res.status(403).json({ message: 'Access denied. Admins only.' });
+    }
+
+    console.log('Admin access granted:', user.username);
+
+    // Attach user data to the request object for use in other routes
+    req.user = {
+      id: user.id,
+      username: user.username,
+      role: user.role,
+    };
+
     next();
-  } catch (err) {
-    console.log("Error checking admin privileges:", err.message);
-    res.status(500).json({ message: 'Error checking admin privileges' });
+  } catch (error) {
+    console.log('Error during admin privilege check:', error.message);
+    res.status(500).json({ message: 'Error checking admin privileges', error: error.message });
   }
 };
 

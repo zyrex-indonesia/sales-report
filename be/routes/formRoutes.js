@@ -11,7 +11,6 @@ const { utcToZonedTime, format } = require('date-fns-tz');
 const { Op } = require('sequelize');
 const router = express.Router();
 
-
 const upload = multer({
   dest: 'uploads/',
   fileFilter: (req, file, cb) => {
@@ -33,23 +32,19 @@ const handleFileUpload = async (req, res, next) => {
 
   try {
     if (originalExt === '.heic' || req.file.mimetype === 'image/heic') {
-      // Convert HEIC to JPEG
       const inputBuffer = fs.readFileSync(tempPath);
       const outputBuffer = await heicConvert({
         buffer: inputBuffer,
-        format: 'JPEG', // Convert to JPEG
+        format: 'JPEG',
         quality: 1,
       });
       fs.writeFileSync(targetPath, outputBuffer);
     } else if (originalExt === '.heif' || req.file.mimetype === 'image/heif') {
-      // Convert HEIF to JPEG using sharp
       await sharp(tempPath).toFormat('jpeg').toFile(targetPath);
     } else {
-      // If not HEIC/HEIF, copy the file as is
       fs.renameSync(tempPath, targetPath);
     }
 
-    // Update req.file with the new path
     req.file.path = targetPath;
     req.file.mimetype = 'image/jpeg';
     next();
@@ -88,31 +83,22 @@ router.post('/submit', authMiddleware, upload.single('photo'), handleFileUpload,
   }
 
   try {
-    // Fetch the username from the Users table using the userId from the session
-    const user = await User.findByPk(req.session.userId);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+    const { id: userId, username } = req.user; // Use `req.user` set by authMiddleware
 
-    // Use the username from the fetched user
-    const username = user.username;
-
-    // Convert submissionTime and endTime to Indonesia timezone and format as HH:mm:ss
     const formattedSubmissionTime = format(toJakartaTime(submissionTime), 'HH:mm:ss');
     const formattedEndTime = endTime
       ? format(toJakartaTime(endTime), 'HH:mm:ss')
       : null;
 
-    // Create a new report
     const report = await Report.create({
-      userId: req.session.userId,
-      username, // Use the fetched username here
+      userId,
+      username,
       location,
       name: customerName,
       photo,
       submissionTime: formattedSubmissionTime,
       endTime: formattedEndTime,
-      description // Add the description field to the database entry
+      description,
     });
 
     res.status(201).json({ success: true, message: 'Report submitted successfully' });
@@ -125,18 +111,13 @@ router.post('/submit', authMiddleware, upload.single('photo'), handleFileUpload,
 // GET endpoint to fetch all reports or only the user's own reports
 router.get('/', authMiddleware, async (req, res) => {
   try {
-    const user = await User.findByPk(req.session.userId);
-    if (!user) {
-      return res.status(403).json({ message: 'User not found' });
-    }
+    const { id: userId, role } = req.user; // Use `req.user` set by authMiddleware
 
     let reports;
-    if (user.role === 'admin') {
-      // Admin: Fetch all reports
+    if (role === 'admin') {
       reports = await Report.findAll();
     } else {
-      // User: Fetch their own reports
-      reports = await Report.findAll({ where: { userId: req.session.userId } });
+      reports = await Report.findAll({ where: { userId } });
     }
 
     // Update the photo path to include the 'uploads' folder

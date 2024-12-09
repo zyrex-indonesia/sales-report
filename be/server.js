@@ -163,15 +163,24 @@ app.post('/api/reports/submit', async (req, res) => {
   try {
     console.log('Body:', req.body);
     console.log('File:', req.file);
+
     const { customerName, date, location, submissionTime, endTime, description } = req.body;
 
     // Assuming `photo` is being uploaded as binary or file data
     const photo = req.file ? req.file.path : null;
 
+    if (!req.user || !req.user.id || !req.user.username) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+
+    if (!customerName || !date || !location || !description) {
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
+
     // Create a new report entry in the database
     const report = await Report.create({
-      userId: req.session.userId,  // Assuming user is authenticated and session contains userId
-      username: req.session.username,
+      userId: req.user.id,  // Use user id from req.user
+      username: req.user.username, // Use username from req.user
       name: customerName,
       date,
       location,
@@ -181,12 +190,13 @@ app.post('/api/reports/submit', async (req, res) => {
       description,
     });
 
-    res.status(200).json({ message: 'Report submitted successfully' });
+    res.status(200).json({ message: 'Report submitted successfully', report });
   } catch (error) {
     console.error('Error submitting report:', error);
-    res.status(500).json({ message: 'Error submitting report' });
+    res.status(500).json({ message: 'Error submitting report', error: error.message });
   }
 });
+
 
 app.post('/login', async (req, res) => {
   try {
