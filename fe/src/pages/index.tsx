@@ -5,20 +5,20 @@ import { useRouter } from 'next/router';
 const LoginPage: React.FC = () => {
   const router = useRouter();
 
-  // Function to handle redirection based on the user's role
-  const redirectToPage = (role: string) => {
+  // Helper function to handle redirection based on role
+  const redirectToPage = (role: string | undefined) => {
     if (role === 'admin') {
-      console.log('Redirecting to /dashboard for admin');
-      router.push('/dashboard'); // Redirect admin to the dashboard
+      console.log('Redirecting to /dashboard');
+      router.push('/dashboard');
     } else if (role === 'user') {
-      console.log('Redirecting to /report for user');
-      router.push('/report'); // Redirect user to the report page
+      console.log('Redirecting to /report');
+      router.push('/report');
     } else {
       console.error('Invalid role:', role);
     }
   };
 
-  // Check session and redirect if session is active
+  // Check session on page load
   useEffect(() => {
     const checkSession = async () => {
       try {
@@ -29,9 +29,9 @@ const LoginPage: React.FC = () => {
 
         if (response.ok) {
           const data = await response.json();
+          console.log('Session data:', data);
           if (data.message === 'Session active') {
-            console.log('Session active:', data.role);
-            redirectToPage(data.role); // Redirect based on role
+            redirectToPage(data.role); // Handle redirection
           } else {
             console.log('No active session found.');
           }
@@ -44,7 +44,7 @@ const LoginPage: React.FC = () => {
     };
 
     checkSession();
-  }, [router]); // Include `router` in the dependency array
+  }, [router]);
 
   // Handle login success
   const onLoginSuccess = async () => {
@@ -56,13 +56,13 @@ const LoginPage: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        console.log('Login successful. Redirecting based on role...');
-        redirectToPage(data.role); // Redirect based on role
+        console.log('Login successful. Redirecting...');
+        redirectToPage(data.role); // Handle redirection
       } else {
         console.error('Session check failed:', response.status);
       }
     } catch (error) {
-      console.error('Error determining role after login:', error);
+      console.error('Error during login:', error);
     }
   };
 

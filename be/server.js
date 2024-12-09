@@ -114,6 +114,7 @@ app.use(session({
 
 // Check-session route
 app.get('https://api.sales.zyrex.com/api/users/check-session', (req, res) => {
+  console.log('Session data:', req.session);
   if (req.session && req.session.userId && req.session.role) {
     console.log('Session is active:', req.session.role); // Debug session data
     return res.json({
