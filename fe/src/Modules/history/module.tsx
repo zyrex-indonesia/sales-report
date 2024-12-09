@@ -26,36 +26,37 @@ const HistoryModule: React.FC = () => {
     customerName: "",
   });
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [userRole, setUserRole] = useState<string>(""); // Store the role of the current user
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch user role and reports
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        const userResponse = await axios.get("https://api.sales.zyrex.com/api/auth/user", {
-          withCredentials: true, // Fetch user details, including role
+        // Fetch user role from the API
+        const userResponse = await axios.get("https://api.sales.zyrex.com/api/users/role", {
+          headers: {
+            username: localStorage.getItem("username") || "",
+            password: localStorage.getItem("password") || "",
+          },
         });
 
-        setUserRole(userResponse.data.role); // Store the current user's role
+        const { role } = userResponse.data;
 
-        const reportResponse = await axios.get<ReportData[]>(
-          "https://api.sales.zyrex.com/api/reports",
-          {
-            headers: {
-              username: userResponse.data.username, // Pass the username
-              password: userResponse.data.password, // Pass the user's password or token
-            },
-            withCredentials: true,
-          }
-        );
+        // Fetch reports based on the user role
+        const reportsEndpoint =
+          role === "admin"
+            ? "https://api.sales.zyrex.com/api/reports" // Admin fetches all reports
+            : "https://api.sales.zyrex.com/api/reports/user"; // User fetches only their reports
 
-        const data = reportResponse.data || [];
+        const reportsResponse = await axios.get<ReportData[]>(reportsEndpoint, {
+          headers: {
+            username: localStorage.getItem("username") || "",
+            password: localStorage.getItem("password") || "",
+          },
+        });
+
+        const data = reportsResponse.data || [];
         setReports(data);
         setFilteredReports(data);
-
-        const usernames = [...new Set(data.map((report) => report.username))];
-        setUniqueUsernames(usernames);
       } catch (error) {
         console.error("Error fetching reports or user role:", error);
         setError("Unable to fetch reports. Please try again.");
