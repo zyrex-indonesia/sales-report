@@ -111,51 +111,65 @@ router.post('/submit', authMiddleware, upload.single('photo'), handleFileUpload,
 // GET endpoint to fetch all reports or only the user's own reports
 router.get('/', authMiddleware, async (req, res) => {
   try {
-    const { id: userId, role } = req.user; // Use `req.user` set by authMiddleware
+    const { id: userId, role } = req.user;
+
+    if (!userId || !role) {
+      console.error('User not authenticated or role missing in req.user');
+      return res.status(403).json({ message: 'Authentication required.' });
+    }
 
     let reports;
     if (role === 'admin') {
+      console.log('Fetching all reports for admin.');
       reports = await Report.findAll();
     } else {
+      console.log(`Fetching reports for userId: ${userId}`);
       reports = await Report.findAll({ where: { userId } });
     }
 
-    // Update the photo path to include the 'uploads' folder
+    if (!reports || reports.length === 0) {
+      console.log('No reports found.');
+      return res.status(404).json({ message: 'No reports found.' });
+    }
+
+    // Update photo paths
     reports = reports.map((report) => ({
       ...report.toJSON(),
-      photo: report.photo ? `/${report.photo}` : null, // Add leading slash
+      photo: report.photo ? `/${report.photo}` : null,
     }));
 
     res.status(200).json(reports);
   } catch (error) {
-    console.error('Error fetching reports:', error);
-    res.status(500).json({ message: 'Error fetching reports' });
+    console.error('Error fetching reports:', error.message);
+    res.status(500).json({ message: 'Error fetching reports.', error: error.message });
   }
 });
 
+// GET endpoint to fetch daily reports
 router.get('/daily', authMiddleware, async (req, res) => {
   try {
-    // Get current time in Jakarta timezone
     const now = new Date();
-    const jakartaNow = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
+    const jakartaNow = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
 
-    // Define start and end of the day in Jakarta timezone
     const todayStart = new Date(jakartaNow.setHours(0, 0, 0, 0));
     const todayEnd = new Date(todayStart);
     todayEnd.setDate(todayStart.getDate() + 1);
 
-    console.log('Jakarta Date Range:', todayStart, todayEnd); // Debug log
+    console.log('Fetching daily reports. Date Range:', todayStart, todayEnd);
 
     const reports = await Report.findAll({
       where: {
         createdAt: {
-          [Op.gte]: todayStart, // Start of today
-          [Op.lt]: todayEnd,    // Start of tomorrow
+          [Op.gte]: todayStart,
+          [Op.lt]: todayEnd,
         },
       },
     });
 
-    console.log('Reports Found:', reports.length); // Debug log
+    if (!reports || reports.length === 0) {
+      console.log('No daily reports found.');
+      return res.status(404).json({ message: 'No daily reports found.' });
+    }
 
     reports.forEach((report) => {
       if (report.photo && !report.photo.startsWith('uploads/')) {
@@ -165,9 +179,10 @@ router.get('/daily', authMiddleware, async (req, res) => {
 
     res.status(200).json(reports);
   } catch (error) {
-    console.error('Error fetching daily reports:', error);
-    res.status(500).json({ message: 'Error fetching daily reports' });
+    console.error('Error fetching daily reports:', error.message);
+    res.status(500).json({ message: 'Error fetching daily reports.', error: error.message });
   }
 });
+
 
 module.exports = router;
