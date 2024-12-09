@@ -1,65 +1,61 @@
-import { useEffect } from 'react';
-import LoginModule from '@modules/login/module';
 import { useRouter } from 'next/router';
+import React, { useState } from 'react';
+import LoginModule from '@modules/login/module';
 
 const LoginPage: React.FC = () => {
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    const checkSession = async () => {
+  const onLoginSuccess = (username: string, password: string): void => {
+    (async () => {
       try {
-        const response = await fetch('https://api.sales.zyrex.com/api/users/check-session', {
-          method: 'GET',
-          credentials: 'include', // Include session cookie
-        });
+        // Fetch user details based on username
+        const response = await fetch(
+          `https://api.sales.zyrex.com/api/users?username=${username}`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
 
-        if (response.ok) {
-          const data = await response.json();
-          if (data.message === 'Session active') {
-            console.log('Session is active, redirecting...');
-            if (data.role === 'admin') {
-              router.push('/dashboard'); // Redirect admin to the dashboard
-            } else if (data.role === 'user') {
-              router.push('/report'); // Redirect user to the report page
-            }
+        if (!response.ok) {
+          throw new Error('Failed to fetch user details');
+        }
+
+        const data = await response.json();
+        const user = Array.isArray(data)
+          ? data.find((user: any) => user.username === username)
+          : data.users?.find((user: any) => user.username === username);
+
+        if (user && user.role) {
+          if (user.role === 'admin') {
+            router.push('/dashboard'); // Redirect admin
+          } else if (user.role === 'user') {
+            router.push('/report'); // Redirect user
           } else {
-            console.log('No active session found.');
+            throw new Error('Invalid user role');
           }
         } else {
-          console.log('Session is not active:', response.status);
-          localStorage.removeItem('authToken'); // Clear any stale tokens
-          localStorage.removeItem('role');
+          throw new Error('User not found');
         }
-      } catch (error) {
-        console.error('Error checking session:', error);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred during login');
       }
-    };
-
-    checkSession();
-  }, [router]); // Include `router` in the dependency array
-
-  const onLoginSuccess = async () => {
-    try {
-      const response = await fetch('https://api.sales.zyrex.com/api/users/check-session', {
-        method: 'GET',
-        credentials: 'include', // Include session cookie
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Login successful. Redirecting based on role...');
-        if (data.role === 'admin') {
-          router.push('/dashboard'); // Redirect admin to the dashboard
-        } else if (data.role === 'user') {
-          router.push('/report'); // Redirect user to the report page
-        }
-      }
-    } catch (error) {
-      console.error('Error determining role after login:', error);
-    }
+    })();
   };
 
-  return <LoginModule onLoginSuccess={onLoginSuccess} />;
+  return (
+    <div className="p-16 bg-red-800 min-h-screen flex justify-center items-center">
+      {error && <p className="text-red-500 mb-4">{error}</p>}
+      <LoginModule
+        onLoginSuccess={(username: string, password: string) =>
+          onLoginSuccess(username, password)
+        }
+      />
+    </div>
+  );
 };
 
 export default LoginPage;

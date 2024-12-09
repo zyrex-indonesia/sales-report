@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 interface LoginModuleProps {
-  onLoginSuccess: () => void; // Callback to redirect or update parent state
+  onLoginSuccess: (username: string, password: string) => void; // Callback to redirect or update parent state
 }
 
 const LoginModule: React.FC<LoginModuleProps> = ({ onLoginSuccess }) => {
@@ -35,7 +35,7 @@ const LoginModule: React.FC<LoginModuleProps> = ({ onLoginSuccess }) => {
       if (data.role) {
         console.log('Role received:', data.role);
         localStorage.setItem('role', data.role); // Save role to localStorage
-        onLoginSuccess();
+        onLoginSuccess(username, password);
       } else {
         setError('Role is undefined in login response.');
       }
