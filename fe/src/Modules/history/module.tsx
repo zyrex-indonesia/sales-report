@@ -26,40 +26,24 @@ const HistoryModule: React.FC = () => {
     customerName: "",
   });
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        // Fetch user role from the API
-        const userResponse = await axios.get("https://api.sales.zyrex.com/api/users/role", {
-          headers: {
-            username: localStorage.getItem("username") || "",
-            password: localStorage.getItem("password") || "",
-          },
-        });
-
-        const { role } = userResponse.data;
-
-        // Fetch reports based on the user role
-        const reportsEndpoint =
-          role === "admin"
-            ? "https://api.sales.zyrex.com/api/reports" // Admin fetches all reports
-            : "https://api.sales.zyrex.com/api/reports/user"; // User fetches only their reports
-
-        const reportsResponse = await axios.get<ReportData[]>(reportsEndpoint, {
-          headers: {
-            username: localStorage.getItem("username") || "",
-            password: localStorage.getItem("password") || "",
-          },
-        });
-
-        const data = reportsResponse.data || [];
+        const response = await axios.get<ReportData[]>(
+          "https://api.sales.zyrex.com/api/reports",
+          {
+            withCredentials: true,
+          }
+        );
+        const data = response.data || [];
         setReports(data);
         setFilteredReports(data);
+
+        const usernames = [...new Set(data.map((report) => report.username))];
+        setUniqueUsernames(usernames);
       } catch (error) {
-        console.error("Error fetching reports or user role:", error);
-        setError("Unable to fetch reports. Please try again.");
+        console.error("Error fetching reports:", error);
       }
     };
 
