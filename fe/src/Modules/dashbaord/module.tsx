@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import BaseLayout from "@components/layouts/base";
+import { format, parse } from 'date-fns';
+import { zonedTimeToUtc, utcToZonedTime } from 'date-fns-tz';
 
 interface ReportData {
   id: number;
@@ -21,36 +23,26 @@ const DashboardModule: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
-  // Function to convert UTC time to Indonesia time
-  const toIndonesiaTime = (utcTime: string | undefined): string => {
-    if (!utcTime) {
-      console.error("Invalid time: Time is undefined or null");
-      return "Invalid time";
-    }
-  
+
+  const toJakartaTime = (timeString: string): string => {
     try {
-      const utcDate = new Date(utcTime);
+      const timeZone = 'Asia/Jakarta';
   
-      // Check if the date is valid
-      if (isNaN(utcDate.getTime())) {
-        console.error("Invalid time: Cannot parse UTC time", utcTime);
-        return "Invalid time";
+      // Ensure the time string is in a valid format
+      const parsedTime = parse(timeString, 'HH:mm:ss', new Date());
+  
+      if (isNaN(parsedTime.getTime())) {
+        throw new Error(`Cannot parse UTC time: ${timeString}`);
       }
   
-      return new Intl.DateTimeFormat("en-GB", {
-        timeZone: "Asia/Jakarta",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-      }).format(utcDate);
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error("Error converting time to Indonesia time:", error.message);
-      } else {
-        console.error("Unexpected error:", error);
-      }
-      return "Invalid time";
+      // Convert to Jakarta time zone
+      const jakartaTime = utcToZonedTime(parsedTime, timeZone);
+  
+      // Return the formatted time
+      return format(jakartaTime, 'HH:mm:ss');
+    } catch (error: any) {
+      console.error('Error converting time to Indonesia time:', error.message || error);
+      return 'Invalid time';
     }
   };
 
@@ -77,7 +69,10 @@ const DashboardModule: React.FC = () => {
           }
         );
 
-        const data = response.data || [];
+        const data = response.data.map((report) => ({
+          ...report,
+          submissionTime: toJakartaTime(report.submissionTime)
+        }));
         setReports(data);
         setFilteredReports(data);
 
@@ -198,7 +193,7 @@ const DashboardModule: React.FC = () => {
                       <strong>Username:</strong> {report.username}
                     </span>
                     <span>
-                      <strong>Time:</strong> {toIndonesiaTime(report.submissionTime)}
+                      <strong>Time:</strong> {report.submissionTime}
                     </span>
                   </div>
                   <div className="mb-3">
