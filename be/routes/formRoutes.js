@@ -8,6 +8,7 @@ const heicConvert = require('heic-convert');
 const path = require('path');
 const fs = require('fs');
 const { utcToZonedTime, format } = require('date-fns-tz');
+const { parseISO } = require('date-fns');
 const { Op } = require('sequelize');
 const router = express.Router();
 
@@ -54,31 +55,20 @@ const handleFileUpload = async (req, res, next) => {
   }
 };
 
-// Convert time to Indonesia Timezone
 const toJakartaTime = (utcTime) => {
   try {
     const timeZone = 'Asia/Jakarta';
-
-    // Create a Date object from the UTC time string
-    const utcDate = new Date(`1970-01-01T${utcTime}Z`);
-
+    const utcDate = parseISO(`1970-01-01T${utcTime}Z`); // Parse the time string as ISO format
     if (isNaN(utcDate.getTime())) {
       throw new Error(`Invalid UTC time: ${utcTime}`);
     }
-
-    // Convert the UTC time to Jakarta timezone
-    const jakartaTime = utcToZonedTime(utcDate, timeZone);
-
-    // Format the Jakarta time to HH:mm:ss
-    return format(jakartaTime, 'HH:mm:ss', { timeZone });
+    return utcToZonedTime(utcDate, timeZone);
   } catch (error) {
     console.error('Error converting to Jakarta time:', error.message);
-    return null;
+    throw error;
   }
 };
 
-
-// Apply multer middleware to handle file upload
 router.post('/submit', authMiddleware, upload.single('photo'), handleFileUpload, async (req, res) => {
   console.log('Body:', req.body); // Log the body data
   console.log('File:', req.file); // Log the file data
@@ -87,17 +77,23 @@ router.post('/submit', authMiddleware, upload.single('photo'), handleFileUpload,
   const photo = req.file ? req.file.path : null;
 
   if (!customerName || !date || !photo || !description) {
-    console.error("Missing required fields");
+    console.error('Missing required fields');
     return res.status(400).json({ message: 'Please fill in all required fields.' });
   }
 
   try {
     const { id: userId, username } = req.user; // Use `req.user` set by authMiddleware
 
-    const formattedSubmissionTime = format(toJakartaTime(submissionTime), 'HH:mm:ss');
+    const formattedSubmissionTime = submissionTime
+      ? format(toJakartaTime(submissionTime), 'HH:mm:ss')
+      : null;
     const formattedEndTime = endTime
       ? format(toJakartaTime(endTime), 'HH:mm:ss')
       : null;
+
+    if (!formattedSubmissionTime) {
+      return res.status(400).json({ message: 'Invalid submission time.' });
+    }
 
     const report = await Report.create({
       userId,
@@ -112,7 +108,7 @@ router.post('/submit', authMiddleware, upload.single('photo'), handleFileUpload,
 
     res.status(201).json({ success: true, message: 'Report submitted successfully' });
   } catch (error) {
-    console.error('Error creating report:', error);
+    console.error('Error creating report:', error.message);
     res.status(500).json({ success: false, message: 'Error creating report', error: error.message });
   }
 });
