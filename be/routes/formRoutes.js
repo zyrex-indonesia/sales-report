@@ -94,16 +94,10 @@ router.post('/submit', authMiddleware, upload.single('photo'), handleFileUpload,
   try {
     const { id: userId, username } = req.user; // Use `req.user` set by authMiddleware
 
-    const formattedSubmissionTime = submissionTime
-      ? format(toJakartaTime(submissionTime), 'HH:mm:ss')
-      : null;
+    const formattedSubmissionTime = format(toJakartaTime(submissionTime), 'HH:mm:ss');
     const formattedEndTime = endTime
       ? format(toJakartaTime(endTime), 'HH:mm:ss')
       : null;
-
-    if (!formattedSubmissionTime) {
-      return res.status(400).json({ message: 'Invalid submission time.' });
-    }
 
     const report = await Report.create({
       userId,
@@ -118,7 +112,7 @@ router.post('/submit', authMiddleware, upload.single('photo'), handleFileUpload,
 
     res.status(201).json({ success: true, message: 'Report submitted successfully' });
   } catch (error) {
-    console.error('Error creating report:', error.message);
+    console.error('Error creating report:', error);
     res.status(500).json({ success: false, message: 'Error creating report', error: error.message });
   }
 });
