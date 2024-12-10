@@ -1,13 +1,14 @@
 const User = require('../models/User');
 
-// Middleware to check if the user is authenticated based on credentials
 const authMiddleware = async (req, res, next) => {
   try {
     const { username, password } = req.headers; // Extract credentials from headers
 
     if (!username || !password) {
       console.log('Authentication failed: Missing username or password');
-      return res.status(403).json({ message: 'Not authenticated. Please provide username and password.' });
+      return res
+        .status(403)
+        .json({ message: 'Not authenticated. Please provide username and password.' });
     }
 
     // Fetch the user from the database using the provided username
@@ -15,7 +16,9 @@ const authMiddleware = async (req, res, next) => {
 
     if (!user || user.password !== password) {
       console.log('Authentication failed: Invalid credentials');
-      return res.status(403).json({ message: 'Invalid username or password. Please try again.' });
+      return res
+        .status(403)
+        .json({ message: 'Invalid username or password. Please try again.' });
     }
 
     console.log('User authenticated:', user.username);
@@ -27,10 +30,13 @@ const authMiddleware = async (req, res, next) => {
       role: user.role,
     };
 
+    console.log('Attached req.user:', req.user); // Debugging
     next();
   } catch (error) {
     console.log('Error during authentication:', error.message);
-    res.status(500).json({ message: 'Error during authentication', error: error.message });
+    res
+      .status(500)
+      .json({ message: 'Error during authentication', error: error.message });
   }
 };
 
