@@ -57,20 +57,23 @@ const handleFileUpload = async (req, res, next) => {
 // Convert time to Indonesia Timezone
 const toJakartaTime = (utcTime) => {
   try {
-    if (!utcTime || typeof utcTime !== 'string') {
+    const timeZone = 'Asia/Jakarta';
+
+    // Create a Date object from the UTC time string
+    const utcDate = new Date(`1970-01-01T${utcTime}Z`);
+
+    if (isNaN(utcDate.getTime())) {
       throw new Error(`Invalid UTC time: ${utcTime}`);
     }
 
-    const timeZone = 'Asia/Jakarta';
-    const date = new Date(`1970-01-01T${utcTime}`);
-    if (isNaN(date.getTime())) {
-      throw new Error(`Invalid UTC time format: ${utcTime}`);
-    }
+    // Convert the UTC time to Jakarta timezone
+    const jakartaTime = utcToZonedTime(utcDate, timeZone);
 
-    return utcToZonedTime(date, timeZone);
+    // Format the Jakarta time to HH:mm:ss
+    return format(jakartaTime, 'HH:mm:ss', { timeZone });
   } catch (error) {
     console.error('Error converting to Jakarta time:', error.message);
-    return null; // Return null instead of throwing an error to handle gracefully
+    return null;
   }
 };
 
@@ -91,10 +94,16 @@ router.post('/submit', authMiddleware, upload.single('photo'), handleFileUpload,
   try {
     const { id: userId, username } = req.user; // Use `req.user` set by authMiddleware
 
-    const formattedSubmissionTime = format(toJakartaTime(submissionTime), 'HH:mm:ss');
+    const formattedSubmissionTime = submissionTime
+      ? format(toJakartaTime(submissionTime), 'HH:mm:ss')
+      : null;
     const formattedEndTime = endTime
       ? format(toJakartaTime(endTime), 'HH:mm:ss')
       : null;
+
+    if (!formattedSubmissionTime) {
+      return res.status(400).json({ message: 'Invalid submission time.' });
+    }
 
     const report = await Report.create({
       userId,
@@ -109,7 +118,7 @@ router.post('/submit', authMiddleware, upload.single('photo'), handleFileUpload,
 
     res.status(201).json({ success: true, message: 'Report submitted successfully' });
   } catch (error) {
-    console.error('Error creating report:', error);
+    console.error('Error creating report:', error.message);
     res.status(500).json({ success: false, message: 'Error creating report', error: error.message });
   }
 });
