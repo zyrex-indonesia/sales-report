@@ -34,6 +34,8 @@ const LoginModule: React.FC<LoginModuleProps> = ({ onLoginSuccess }) => {
       const data = await response.json();
       if (data.role) {
         console.log('Role received:', data.role);
+        localStorage.setItem('username', username);
+        localStorage.setItem('password', password);
         localStorage.setItem('role', data.role); // Save role to localStorage
         onLoginSuccess(username, password);
       } else {

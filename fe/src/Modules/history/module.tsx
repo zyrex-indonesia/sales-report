@@ -26,27 +26,45 @@ const HistoryModule: React.FC = () => {
     customerName: "",
   });
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [role, setRole] = useState<string>(""); // Track user role
+  const username = localStorage.getItem("username");
+  const password = localStorage.getItem("password");
 
   useEffect(() => {
     const fetchReports = async () => {
+      const storedUsername = localStorage.getItem('username');
+      const storedPassword = localStorage.getItem('password');
+      const storedRole = localStorage.getItem('role');
+  
+      if (!storedUsername || !storedPassword) {
+        console.error('Missing credentials in local storage.');
+        return;
+      }
+  
       try {
-        const response = await axios.get<ReportData[]>(
-          "https://api.sales.zyrex.com/api/reports",
-          {
-            withCredentials: true,
-          }
-        );
+        const endpoint =
+          storedRole === 'admin'
+            ? 'https://api.sales.zyrex.com/api/reports'
+            : `https://api.sales.zyrex.com/api/reports?username=${storedUsername}`;
+  
+        const response = await axios.get<ReportData[]>(endpoint, {
+          headers: {
+            username: storedUsername,
+            password: storedPassword,
+          },
+        });
+  
         const data = response.data || [];
         setReports(data);
         setFilteredReports(data);
-
+  
         const usernames = [...new Set(data.map((report) => report.username))];
         setUniqueUsernames(usernames);
       } catch (error) {
-        console.error("Error fetching reports:", error);
+        console.error('Error fetching reports:', error);
       }
     };
-
+  
     fetchReports();
   }, []);
 
