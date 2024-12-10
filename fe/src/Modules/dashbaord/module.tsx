@@ -21,6 +21,23 @@ const DashboardModule: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
+  // Function to convert UTC time to Indonesia time
+  const toIndonesiaTime = (utcTime: string): string => {
+    try {
+      const utcDate = new Date(utcTime);
+      return new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Asia/Jakarta",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }).format(utcDate);
+    } catch (error) {
+      console.error("Error converting time to Indonesia time:", error);
+      return utcTime; // Return original time if conversion fails
+    }
+  };
+
   useEffect(() => {
     const fetchReports = async () => {
       try {
@@ -165,7 +182,7 @@ const DashboardModule: React.FC = () => {
                       <strong>Username:</strong> {report.username}
                     </span>
                     <span>
-                      <strong>Time:</strong> {report.submissionTime}
+                      <strong>Time:</strong> {toIndonesiaTime(report.submissionTime)}
                     </span>
                   </div>
                   <div className="mb-3">
