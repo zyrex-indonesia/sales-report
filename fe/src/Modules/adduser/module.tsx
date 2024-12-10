@@ -24,11 +24,22 @@ const AddUserModule: React.FC = () => {
     }
 
     try {
+          // Retrieve username and password from local storage
+      const storedUsername = localStorage.getItem('username');
+      const storedPassword = localStorage.getItem('password');
+
+      if (!storedUsername || !storedPassword) {
+        alert('Authentication credentials are missing.');
+        return;
+      }
+
       const response = await fetch('https://api.sales.zyrex.com/api/users', {
         method: 'POST',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          username: storedUsername, // Include username from local storage
+          password: storedPassword, // Include password from local storage
         },
         body: JSON.stringify({
           username,
