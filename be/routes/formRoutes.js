@@ -57,17 +57,23 @@ const handleFileUpload = async (req, res, next) => {
 // Convert time to Indonesia Timezone
 const toJakartaTime = (utcTime) => {
   try {
+    if (!utcTime || typeof utcTime !== 'string') {
+      throw new Error(`Invalid UTC time: ${utcTime}`);
+    }
+
     const timeZone = 'Asia/Jakarta';
     const date = new Date(`1970-01-01T${utcTime}`);
     if (isNaN(date.getTime())) {
-      throw new Error(`Invalid UTC time: ${utcTime}`);
+      throw new Error(`Invalid UTC time format: ${utcTime}`);
     }
+
     return utcToZonedTime(date, timeZone);
   } catch (error) {
     console.error('Error converting to Jakarta time:', error.message);
-    throw error;
+    return null; // Return null instead of throwing an error to handle gracefully
   }
 };
+
 
 // Apply multer middleware to handle file upload
 router.post('/submit', authMiddleware, upload.single('photo'), handleFileUpload, async (req, res) => {
