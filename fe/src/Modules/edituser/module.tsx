@@ -16,32 +16,53 @@ const EditUserModule: React.FC = () => {
   const [odooBatchId, setOdooBatchId] = useState('');
 
   useEffect(() => {
-    if (id) {
-      const fetchUser = async () => {
-        try {
-          const response = await fetch(`https://api.sales.zyrex.com/api/users/${id}`, {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
+    const fetchUser = async () => {
+      try {
+        // Retrieve admin credentials from local storage
+        const storedUsername = localStorage.getItem('username');
+        const storedPassword = localStorage.getItem('password');
 
-          if (!response.ok) return;
-          const data = await response.json();
-          setUsername(data.username || '');
-          setFirstName(data.first_name || '');
-          setLastName(data.last_name || '');
-          setPosition(data.position || '');
-          setRole(data.role || 'user');
-          setOdooBatchId(data.odoo_batch_id || '');
-        } catch (error) {
-          console.error('Error fetching user data:', error);
+        if (!storedUsername || !storedPassword) {
+          alert('Access denied. Admin credentials are required.');
+          router.push('/login'); // Redirect to login if credentials are missing
+          return;
         }
-      };
+
+        const response = await fetch(`https://api.sales.zyrex.com/api/users/${id}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            username: storedUsername, // Pass stored username
+            password: storedPassword, // Pass stored password
+          },
+        });
+
+        if (!response.ok) {
+          if (response.status === 403) {
+            alert('Access denied. Admins only.');
+          } else {
+            alert('Failed to fetch user details.');
+          }
+          return;
+        }
+
+        const data = await response.json();
+        setUsername(data.username || '');
+        setFirstName(data.first_name || '');
+        setLastName(data.last_name || '');
+        setPosition(data.position || '');
+        setRole(data.role || 'user');
+        setOdooBatchId(data.odoo_batch_id || '');
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        alert('Failed to fetch user details. Please try again.');
+      }
+    };
+
+    if (id) {
       fetchUser();
     }
-  }, [id]);
+  }, [id, router]);
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -54,14 +75,26 @@ const EditUserModule: React.FC = () => {
       role,
       password,
       confirmPassword,
+      odoo_batch_id: odooBatchId, // Include Odoo batch ID if applicable
     };
 
     try {
+      // Retrieve admin credentials from local storage
+      const storedUsername = localStorage.getItem('username');
+      const storedPassword = localStorage.getItem('password');
+
+      if (!storedUsername || !storedPassword) {
+        alert('Access denied. Admin credentials are required.');
+        router.push('/login'); // Redirect to login if credentials are missing
+        return;
+      }
+
       const response = await fetch(`https://api.sales.zyrex.com/api/users/${id}`, {
         method: 'PUT',
-        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          username: storedUsername, // Pass stored username
+          password: storedPassword, // Pass stored password
         },
         body: JSON.stringify(updatedUserData),
       });
@@ -70,10 +103,12 @@ const EditUserModule: React.FC = () => {
         alert('User updated successfully');
         router.push('/user-management');
       } else {
-        alert('Failed to update user');
+        const errorData = await response.json();
+        alert(`Failed to update user: ${errorData.message}`);
       }
     } catch (error) {
       console.error('Error updating user:', error);
+      alert('Failed to update user. Please try again.');
     }
   };
 
