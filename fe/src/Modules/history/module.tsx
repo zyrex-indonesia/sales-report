@@ -26,9 +26,6 @@ const HistoryModule: React.FC = () => {
     customerName: "",
   });
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [role, setRole] = useState<string>(""); // Track user role
-  const username = localStorage.getItem("username");
-  const password = localStorage.getItem("password");
 
   useEffect(() => {
     const fetchReports = async () => {

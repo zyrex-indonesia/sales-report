@@ -102,11 +102,22 @@ const ReportModule: React.FC = () => {
     formData.append('description', description);
 
     try {
+      // Retrieve credentials from localStorage
+      const username = localStorage.getItem('username');
+      const password = localStorage.getItem('password');
+
+      if (!username || !password) {
+        alert('Missing credentials. Please log in again.');
+        setIsSubmitting(false);
+        return;
+      }
+
       await axios.post('https://api.sales.zyrex.com/api/reports/submit', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          username,
+          password,
         },
-        withCredentials: true,
       });
 
       alert('Form submitted successfully!');
