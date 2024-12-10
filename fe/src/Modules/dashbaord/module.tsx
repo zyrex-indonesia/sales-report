@@ -24,10 +24,25 @@ const DashboardModule: React.FC = () => {
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-        const response = await axios.get<ReportData[]>(`https://api.sales.zyrex.com/api/reports/daily`, {
-          withCredentials: true,
-        });
+        const username = localStorage.getItem("username");
+        const password = localStorage.getItem("password");
+
+        if (!username || !password) {
+          setError("Access denied. Admin credentials are required.");
+          setIsLoading(false);
+          return;
+        }
+
+        const response = await axios.get<ReportData[]>(
+          `https://api.sales.zyrex.com/api/reports/daily`,
+          {
+            headers: {
+              username,
+              password,
+            },
+            withCredentials: true,
+          }
+        );
 
         const data = response.data || [];
         setReports(data);
@@ -35,9 +50,16 @@ const DashboardModule: React.FC = () => {
 
         const usernames = [...new Set(data.map((report) => report.username))];
         setUniqueUsernames(usernames);
-      } catch (err) {
+      } catch (err: any) {
         console.error("Error fetching reports:", err);
-        setError("Failed to load reports. Please try again later.");
+
+        if (err.response?.status === 403) {
+          setError("Access denied. Admins only.");
+        } else if (err.response?.status === 404) {
+          setError("No reports found for today.");
+        } else {
+          setError("Failed to load reports. Please try again later.");
+        }
       } finally {
         setIsLoading(false);
       }
