@@ -22,9 +22,21 @@ const DashboardModule: React.FC = () => {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   // Function to convert UTC time to Indonesia time
-  const toIndonesiaTime = (utcTime: string): string => {
+  const toIndonesiaTime = (utcTime: string | undefined): string => {
+    if (!utcTime) {
+      console.error("Invalid time: Time is undefined or null");
+      return "Invalid time";
+    }
+  
     try {
       const utcDate = new Date(utcTime);
+  
+      // Check if the date is valid
+      if (isNaN(utcDate.getTime())) {
+        console.error("Invalid time: Cannot parse UTC time", utcTime);
+        return "Invalid time";
+      }
+  
       return new Intl.DateTimeFormat("en-GB", {
         timeZone: "Asia/Jakarta",
         hour: "2-digit",
@@ -33,8 +45,12 @@ const DashboardModule: React.FC = () => {
         hour12: false,
       }).format(utcDate);
     } catch (error) {
-      console.error("Error converting time to Indonesia time:", error);
-      return utcTime; // Return original time if conversion fails
+      if (error instanceof Error) {
+        console.error("Error converting time to Indonesia time:", error.message);
+      } else {
+        console.error("Unexpected error:", error);
+      }
+      return "Invalid time";
     }
   };
 
