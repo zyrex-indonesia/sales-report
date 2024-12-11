@@ -13,7 +13,7 @@ const Report = require('./models/Report'); // Import the Report model
 const fs = require('fs');
 const mysql = require('mysql2');
 const bcrypt = require('bcryptjs');
-
+const { utcToZonedTime, format } = require('date-fns-tz');
 const app = express();
 app.use(express.json());
 
@@ -41,7 +41,8 @@ const connection = mysql.createConnection({
   host: '172.17.0.2',  // Update with your database host
   user: 'root',       // Update with your MySQL username
   password: 'Zyr3xuser', // Update with your MySQL password
-  database: 'sales_report_db' // Update with your MySQL database name
+  database: 'sales_report_db', // Update with your MySQL database name
+  timezone: 'Asia/Jakarta' // Ensures all times are handled in WIB
 });
 
 function initializeDatabase() {
@@ -91,6 +92,7 @@ const sequelize = new Sequelize(
   {
     host: process.env.DB_HOST || '172.17.0.2',
     dialect: 'mysql',
+    timezone: '+07:00', // Set Jakarta timezone
   }
 );
 
@@ -177,15 +179,26 @@ app.post('/api/reports/submit', async (req, res) => {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
+    // Timezone conversion to Jakarta time (Asia/Jakarta)
+    const timeZone = 'Asia/Jakarta';
+
+    const jakartaSubmissionTime = submissionTime
+      ? format(utcToZonedTime(new Date(`${date}T${submissionTime}`), timeZone), 'HH:mm:ss', { timeZone })
+      : null;
+
+    const jakartaEndTime = endTime
+      ? format(utcToZonedTime(new Date(`${date}T${endTime}`), timeZone), 'HH:mm:ss', { timeZone })
+      : null;
+
     // Create a new report entry in the database
     const report = await Report.create({
-      userId: req.user.id,  // Use user id from req.user
+      userId: req.user.id, // Use user id from req.user
       username: req.user.username, // Use username from req.user
       name: customerName,
       date,
       location,
-      submissionTime,
-      endTime,
+      submissionTime: jakartaSubmissionTime,
+      endTime: jakartaEndTime,
       photo,
       description,
     });
