@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import BaseLayout from "@components/layouts/base";
+import { parse, format } from "date-fns";
 
 interface ReportData {
   id: number;
@@ -27,6 +28,29 @@ const HistoryModule: React.FC = () => {
   });
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
+  /**
+   * Adjusts the time by subtracting 7 hours from `submissionTime`.
+   */
+  const adjustTimeBySubtracting7Hours = (timeString: string): string => {
+    try {
+      // Parse the time string into a Date object
+      const parsedTime = parse(timeString, "HH:mm:ss", new Date());
+
+      if (isNaN(parsedTime.getTime())) {
+        throw new Error(`Invalid time format: ${timeString}`);
+      }
+
+      // Subtract 7 hours
+      parsedTime.setHours(parsedTime.getHours() - 7);
+
+      // Return the adjusted time as a formatted string
+      return format(parsedTime, "HH:mm:ss");
+    } catch (error: any) {
+      console.error("Error adjusting time:", error.message || error);
+      return "Invalid time";
+    }
+  };
+
   useEffect(() => {
     const fetchReports = async () => {
       const storedUsername = localStorage.getItem('username');
@@ -40,8 +64,8 @@ const HistoryModule: React.FC = () => {
   
       try {
         const endpoint =
-          storedRole === 'admin'
-            ? 'https://api.sales.zyrex.com/api/reports'
+          storedRole === "admin"
+            ? "https://api.sales.zyrex.com/api/reports"
             : `https://api.sales.zyrex.com/api/reports?username=${storedUsername}`;
   
         const response = await axios.get<ReportData[]>(endpoint, {
@@ -50,8 +74,13 @@ const HistoryModule: React.FC = () => {
             password: storedPassword,
           },
         });
-  
-        const data = response.data || [];
+
+        const data = response.data.map((report) => ({
+          ...report,
+          // Adjust the submissionTime by subtracting 7 hours
+          submissionTime: adjustTimeBySubtracting7Hours(report.submissionTime),
+        }));
+
         setReports(data);
         setFilteredReports(data);
   
