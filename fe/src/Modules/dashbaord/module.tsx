@@ -23,32 +23,27 @@ const DashboardModule: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
-  /**
-   * Converts a time string (HH:mm:ss) from UTC to Jakarta time.
-   */
   const toJakartaTime = (timeString: string): string => {
     try {
-      const timeZone = 'Asia/Jakarta';
-
-      // Parse the time string assuming it is in UTC
-      const utcDate = parse(timeString, 'HH:mm:ss', new Date());
-
+      // Parse the time string into a Date object
+      const parsedTime = parse(timeString, 'HH:mm:ss', new Date());
+  
       // Check if parsing succeeded
-      if (isNaN(utcDate.getTime())) {
+      if (isNaN(parsedTime.getTime())) {
         throw new Error(`Invalid time format: ${timeString}`);
       }
-
-      // Convert the UTC time to Jakarta time
-      const jakartaTime = utcToZonedTime(utcDate, timeZone);
-
-      // Return the formatted Jakarta time
-      return format(jakartaTime, 'HH:mm:ss');
+  
+      // Subtract 7 hours
+      parsedTime.setHours(parsedTime.getHours() - 7);
+  
+      // Return the adjusted time in 'HH:mm:ss' format
+      return format(parsedTime, 'HH:mm:ss');
     } catch (error: any) {
-      console.error('Error converting time to Jakarta time:', error.message || error);
+      console.error('Error adjusting time:', error.message || error);
       return 'Invalid time';
     }
   };
-
+  
   useEffect(() => {
     const fetchReports = async () => {
       try {
