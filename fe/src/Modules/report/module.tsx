@@ -29,6 +29,7 @@ const ReportModule: React.FC = () => {
   const [location, setLocation] = useState('Fetching location...');
   const [photo, setPhoto] = useState<File | null>(null);
   const [description, setDescription] = useState('');
+  const [descriptionError, setDescriptionError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionTime, setSubmissionTime] = useState('');
   const [endTime, setEndTime] = useState('');
@@ -79,12 +80,31 @@ const ReportModule: React.FC = () => {
     }
   };
 
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setDescription(value);
+
+    // Enforce minimum 20 characters
+    if (value.length < 20) {
+      setDescriptionError('Description must be at least 20 characters long.');
+    } else {
+      setDescriptionError(''); // Clear the error if valid
+    }
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     if (isSubmitting) return;
 
     setIsSubmitting(true);
+
+    // Validate description length before submitting
+    if (description.length < 20) {
+      alert('Description must be at least 20 characters long.');
+      setIsSubmitting(false);
+      return;
+    }
 
     if (!customerName || !photo) {
       alert('Please fill in all required fields.');
@@ -210,8 +230,11 @@ const ReportModule: React.FC = () => {
               required
               className="w-full p-2 border rounded resize-none"
             />
+          {descriptionError && (
+              <p className="text-red-500 text-sm mt-1">{descriptionError}</p>
+            )}
           </div>
-
+          
           {/* Photo Upload */}
           <div className="bg-white rounded-lg p-4 shadow">
             <label className="block text-sm font-bold mb-1">Photo:</label>

@@ -225,7 +225,10 @@ const HistoryModule: React.FC = () => {
                   <strong>Customer Name:</strong> {report.name}
                 </p>
                 <p>
-                  <strong>Time:</strong> {report.submissionTime}
+                  <strong>Submission Time:</strong> {report.submissionTime}
+                </p>
+                <p>
+                  <strong>End Time:</strong> {report.endTime}
                 </p>
                 <p>
                   <strong>Date:</strong> {new Date(report.createdAt).toLocaleDateString()}

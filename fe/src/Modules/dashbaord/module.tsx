@@ -9,6 +9,7 @@ interface ReportData {
   username: string;
   name: string;
   submissionTime: string;
+  endTime: string;
   location: string;
   description: string;
   photo: string;
@@ -191,7 +192,10 @@ const DashboardModule: React.FC = () => {
                       <strong>Username:</strong> {report.username}
                     </span>
                     <span>
-                      <strong>Time:</strong> {report.submissionTime}
+                      <strong>Submission Time:</strong> {report.submissionTime}
+                    </span>
+                    <span>
+                      <strong>End Time:</strong> {report.endTime}
                     </span>
                   </div>
                   <div className="mb-3">
