@@ -74,13 +74,16 @@ const HistoryModule: React.FC = () => {
             password: storedPassword,
           },
         });
-
-        const data = response.data.map((report) => ({
-          ...report,
-          // Adjust the submissionTime by subtracting 7 hours
-          submissionTime: adjustTimeBySubtracting7Hours(report.submissionTime),
-        }));
-
+  
+        const data = response.data
+          .map((report) => ({
+            ...report,
+            // Adjust the submissionTime by subtracting 7 hours
+            submissionTime: adjustTimeBySubtracting7Hours(report.submissionTime),
+          }))
+          // Sort by createdAt in descending order (latest first)
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  
         setReports(data);
         setFilteredReports(data);
   
