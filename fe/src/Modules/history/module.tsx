@@ -133,7 +133,7 @@ const HistoryModule: React.FC = () => {
 
   const exportToCSV = () => {
     const headers = [
-      "ID", "User ID", "Username", "Location", "Name", "Photo", "Submission Time", "End Time", "Created At", "Updated At", "Description"
+      "ID", "User ID", "Username", "Location", "Name", "Submission Time", "End Time", "Created At", "Updated At", "Description"
     ];
 
     const rows = filteredReports.map((report) => [
@@ -142,7 +142,6 @@ const HistoryModule: React.FC = () => {
       report.username,
       report.location,
       report.name,
-      report.photo,
       report.submissionTime,
       report.endTime,
       report.createdAt,
