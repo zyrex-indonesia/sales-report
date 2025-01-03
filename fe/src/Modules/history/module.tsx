@@ -15,7 +15,6 @@ interface ReportData {
   createdAt: string;
   updatedAt: string;
   description: string;
-  position: string;
 }
 
 const HistoryModule: React.FC = () => {
@@ -134,14 +133,13 @@ const HistoryModule: React.FC = () => {
 
   const exportToCSV = () => {
     const headers = [
-      "ID", "User ID", "Username", "Position", "Location", "Name", "Photo", "Submission Time", "End Time", "Created At", "Updated At", "Description"
+      "ID", "User ID", "Username", "Location", "Name", "Photo", "Submission Time", "End Time", "Created At", "Updated At", "Description"
     ];
 
     const rows = filteredReports.map((report) => [
       report.id,
       report.userId,
       report.username,
-      report.position,
       report.location,
       report.name,
       report.photo,
