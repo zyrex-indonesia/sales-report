@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import BaseLayout from "@components/layouts/base";
-import { parse, format } from "date-fns";
+import { parse, format, parseISO } from "date-fns";
 
 interface ReportData {
   id: number;
@@ -133,19 +133,17 @@ const HistoryModule: React.FC = () => {
 
   const exportToCSV = () => {
     const headers = [
-      "ID", "User ID", "Username", "Location", "Name", "Submission Time", "End Time", "Created At", "Updated At", "Description"
+      "Username", "Location", "Name", "Submission Time", "End Time", "Created At", "Updated At", "Description"
     ];
 
     const rows = filteredReports.map((report) => [
-      report.id,
-      report.userId,
       report.username,
       report.location,
       report.name,
       report.submissionTime,
       report.endTime,
-      report.createdAt,
-      report.updatedAt,
+      format(parseISO(report.createdAt), "yyyy-MM-dd HH:mm:ss"), // Remove T and Z
+      format(parseISO(report.updatedAt), "yyyy-MM-dd HH:mm:ss"), // Remove T and Z
       report.description,
     ]);
 
