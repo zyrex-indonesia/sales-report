@@ -15,6 +15,7 @@ interface ReportData {
   createdAt: string;
   updatedAt: string;
   description: string;
+  position: string;
 }
 
 const HistoryModule: React.FC = () => {
@@ -27,6 +28,7 @@ const HistoryModule: React.FC = () => {
     customerName: "",
   });
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   /**
    * Adjusts the time by subtracting 7 hours from `submissionTime`.
@@ -56,25 +58,25 @@ const HistoryModule: React.FC = () => {
       const storedUsername = localStorage.getItem('username');
       const storedPassword = localStorage.getItem('password');
       const storedRole = localStorage.getItem('role');
-  
+
       if (!storedUsername || !storedPassword) {
         console.error('Missing credentials in local storage.');
         return;
       }
-  
+
       try {
         const endpoint =
           storedRole === "admin"
             ? "https://api.sales.zyrex.com/api/reports"
             : `https://api.sales.zyrex.com/api/reports?username=${storedUsername}`;
-  
+
         const response = await axios.get<ReportData[]>(endpoint, {
           headers: {
             username: storedUsername,
             password: storedPassword,
           },
         });
-  
+
         const data = response.data
           .map((report) => ({
             ...report,
@@ -83,17 +85,21 @@ const HistoryModule: React.FC = () => {
           }))
           // Sort by createdAt in descending order (latest first)
           .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  
+
         setReports(data);
         setFilteredReports(data);
-  
+
         const usernames = [...new Set(data.map((report) => report.username))];
         setUniqueUsernames(usernames);
+
+        if (storedRole === "admin") {
+          setIsAdmin(true);
+        }
       } catch (error) {
         console.error('Error fetching reports:', error);
       }
     };
-  
+
     fetchReports();
   }, []);
 
@@ -124,6 +130,41 @@ const HistoryModule: React.FC = () => {
   ) => {
     const { name, value } = e.target;
     setFilter((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const exportToCSV = () => {
+    const headers = [
+      "ID", "User ID", "Username", "Position", "Location", "Name", "Photo", "Submission Time", "End Time", "Created At", "Updated At", "Description"
+    ];
+
+    const rows = filteredReports.map((report) => [
+      report.id,
+      report.userId,
+      report.username,
+      report.position,
+      report.location,
+      report.name,
+      report.photo,
+      report.submissionTime,
+      report.endTime,
+      report.createdAt,
+      report.updatedAt,
+      report.description,
+    ]);
+
+    const csvContent = [headers, ...rows]
+      .map((row) => row.map((cell) => `"${cell}"`).join(","))
+      .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "reports.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -182,6 +223,18 @@ const HistoryModule: React.FC = () => {
           />
         </div>
       </div>
+
+      {/* Export Button (Admin Only) */}
+      {isAdmin && (
+        <div className="flex justify-center mt-4">
+          <button
+            onClick={exportToCSV}
+            className="bg-blue-500 text-white px-4 py-2 rounded shadow hover:bg-blue-600"
+          >
+            Export to CSV
+          </button>
+        </div>
+      )}
 
       {/* Reports */}
       <div className="mt-6 flex flex-col gap-4 px-4">
