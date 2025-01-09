@@ -15,6 +15,7 @@ interface ReportData {
   createdAt: string;
   updatedAt: string;
   description: string;
+  position?: string; // Added position to report data
 }
 
 interface UserData {
@@ -42,17 +43,11 @@ const HistoryModule: React.FC = () => {
    */
   const adjustTimeBySubtracting7Hours = (timeString: string): string => {
     try {
-      // Parse the time string into a Date object
       const parsedTime = parse(timeString, "HH:mm:ss", new Date());
-
       if (isNaN(parsedTime.getTime())) {
         throw new Error(`Invalid time format: ${timeString}`);
       }
-
-      // Subtract 7 hours
       parsedTime.setHours(parsedTime.getHours() - 7);
-
-      // Return the adjusted time as a formatted string
       return format(parsedTime, "HH:mm:ss");
     } catch (error: any) {
       console.error("Error adjusting time:", error.message || error);
@@ -85,19 +80,7 @@ const HistoryModule: React.FC = () => {
           },
         });
 
-        const reportsData = reportResponse.data
-          .map((report) => ({
-            ...report,
-            // Adjust the submissionTime by subtracting 7 hours
-            submissionTime: adjustTimeBySubtracting7Hours(report.submissionTime),
-          }))
-          // Sort by createdAt in descending order (latest first)
-          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-        setReports(reportsData);
-        setFilteredReports(reportsData);
-
-        // Fetch positions
+        // Fetch users
         const userResponse = await axios.get<UserData[]>(
           "https://api.sales.zyrex.com/api/users",
           {
@@ -109,10 +92,30 @@ const HistoryModule: React.FC = () => {
         );
 
         const usersData = userResponse.data;
+
+        // Enrich reports with position data
+        const enrichedReports = reportResponse.data.map((report) => {
+          const user = usersData.find((u) => u.username === report.username);
+          return {
+            ...report,
+            position: user ? user.position : "Unknown",
+          };
+        });
+
+        // Sort reports by createdAt in descending order
+        const sortedReports = enrichedReports.sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+        setReports(sortedReports);
+        setFilteredReports(sortedReports);
+
+        // Get unique positions
         const positions = [...new Set(usersData.map((user) => user.position))].filter(Boolean);
         setUniquePositions(positions);
 
-        const usernames = [...new Set(reportsData.map((report) => report.username))];
+        // Get unique usernames
+        const usernames = [...new Set(sortedReports.map((report) => report.username))];
         setUniqueUsernames(usernames);
 
         if (storedRole === "admin") {
@@ -143,14 +146,14 @@ const HistoryModule: React.FC = () => {
         : true;
 
       const matchesPosition = filter.position
-        ? report.userId && filter.position === uniquePositions.find((pos) => pos === filter.position)
+        ? report.position && report.position.toLowerCase() === filter.position.toLowerCase()
         : true;
 
       return matchesUsername && matchesDate && matchesCustomerName && matchesPosition;
     });
 
     setFilteredReports(filtered);
-  }, [filter, reports, uniquePositions]);
+  }, [filter, reports]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -161,7 +164,14 @@ const HistoryModule: React.FC = () => {
 
   const exportToCSV = () => {
     const headers = [
-      "Username", "Location", "Name", "Submission Time", "End Time", "Created At", "Updated At", "Description"
+      "Username",
+      "Location",
+      "Name",
+      "Submission Time",
+      "End Time",
+      "Created At",
+      "Updated At",
+      "Description",
     ];
 
     const rows = filteredReports.map((report) => [
@@ -170,8 +180,8 @@ const HistoryModule: React.FC = () => {
       report.name,
       report.submissionTime,
       report.endTime,
-      format(parseISO(report.createdAt), "yyyy-MM-dd HH:mm:ss"), // Remove T and Z
-      format(parseISO(report.updatedAt), "yyyy-MM-dd HH:mm:ss"), // Remove T and Z
+      format(parseISO(report.createdAt), "yyyy-MM-dd HH:mm:ss"),
+      format(parseISO(report.updatedAt), "yyyy-MM-dd HH:mm:ss"),
       report.description,
     ]);
 
@@ -197,8 +207,8 @@ const HistoryModule: React.FC = () => {
         className="flex flex-wrap gap-4 px-4 py-2"
         style={{
           marginTop: "40px",
-          flexDirection: "column", // Stack filters vertically on small screens
-          alignItems: "stretch", // Ensure filters are the same width
+          flexDirection: "column",
+          alignItems: "stretch",
         }}
       >
         {/* Filters */}
@@ -306,7 +316,6 @@ const HistoryModule: React.FC = () => {
                     onClick={() => setPreviewImage(`https://api.sales.zyrex.com${report.photo}`)}
                   />
                 )}
-                {/* Hover Effect */}
                 <div
                   className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
                   onClick={() => setPreviewImage(`https://api.sales.zyrex.com${report.photo}`)}
@@ -334,6 +343,9 @@ const HistoryModule: React.FC = () => {
                 </p>
                 <p>
                   <strong>Location:</strong> {report.location}
+                </p>
+                <p>
+                  <strong>Position:</strong> {report.position}
                 </p>
                 <p>
                   <strong>Description:</strong> {report.description}
