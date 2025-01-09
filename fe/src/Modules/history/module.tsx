@@ -17,14 +17,22 @@ interface ReportData {
   description: string;
 }
 
+interface UserData {
+  id: number;
+  username: string;
+  position: string;
+}
+
 const HistoryModule: React.FC = () => {
   const [reports, setReports] = useState<ReportData[]>([]);
   const [filteredReports, setFilteredReports] = useState<ReportData[]>([]);
   const [uniqueUsernames, setUniqueUsernames] = useState<string[]>([]);
+  const [uniquePositions, setUniquePositions] = useState<string[]>([]);
   const [filter, setFilter] = useState({
     username: "",
     date: "",
     customerName: "",
+    position: "",
   });
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -53,30 +61,31 @@ const HistoryModule: React.FC = () => {
   };
 
   useEffect(() => {
-    const fetchReports = async () => {
-      const storedUsername = localStorage.getItem('username');
-      const storedPassword = localStorage.getItem('password');
-      const storedRole = localStorage.getItem('role');
+    const fetchReportsAndPositions = async () => {
+      const storedUsername = localStorage.getItem("username");
+      const storedPassword = localStorage.getItem("password");
+      const storedRole = localStorage.getItem("role");
 
       if (!storedUsername || !storedPassword) {
-        console.error('Missing credentials in local storage.');
+        console.error("Missing credentials in local storage.");
         return;
       }
 
       try {
+        // Fetch reports
         const endpoint =
           storedRole === "admin"
             ? "https://api.sales.zyrex.com/api/reports"
             : `https://api.sales.zyrex.com/api/reports?username=${storedUsername}`;
 
-        const response = await axios.get<ReportData[]>(endpoint, {
+        const reportResponse = await axios.get<ReportData[]>(endpoint, {
           headers: {
             username: storedUsername,
             password: storedPassword,
           },
         });
 
-        const data = response.data
+        const reportsData = reportResponse.data
           .map((report) => ({
             ...report,
             // Adjust the submissionTime by subtracting 7 hours
@@ -85,21 +94,36 @@ const HistoryModule: React.FC = () => {
           // Sort by createdAt in descending order (latest first)
           .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-        setReports(data);
-        setFilteredReports(data);
+        setReports(reportsData);
+        setFilteredReports(reportsData);
 
-        const usernames = [...new Set(data.map((report) => report.username))];
+        // Fetch positions
+        const userResponse = await axios.get<UserData[]>(
+          "https://api.sales.zyrex.com/api/users",
+          {
+            headers: {
+              username: storedUsername,
+              password: storedPassword,
+            },
+          }
+        );
+
+        const usersData = userResponse.data;
+        const positions = [...new Set(usersData.map((user) => user.position))].filter(Boolean);
+        setUniquePositions(positions);
+
+        const usernames = [...new Set(reportsData.map((report) => report.username))];
         setUniqueUsernames(usernames);
 
         if (storedRole === "admin") {
           setIsAdmin(true);
         }
       } catch (error) {
-        console.error('Error fetching reports:', error);
+        console.error("Error fetching reports or users:", error);
       }
     };
 
-    fetchReports();
+    fetchReportsAndPositions();
   }, []);
 
   useEffect(() => {
@@ -118,11 +142,15 @@ const HistoryModule: React.FC = () => {
         ? report.name.toLowerCase().includes(filter.customerName.toLowerCase())
         : true;
 
-      return matchesUsername && matchesDate && matchesCustomerName;
+      const matchesPosition = filter.position
+        ? report.userId && filter.position === uniquePositions.find((pos) => pos === filter.position)
+        : true;
+
+      return matchesUsername && matchesDate && matchesCustomerName && matchesPosition;
     });
 
     setFilteredReports(filtered);
-  }, [filter, reports]);
+  }, [filter, reports, uniquePositions]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -217,6 +245,26 @@ const HistoryModule: React.FC = () => {
             className="w-full p-2 border rounded bg-gray-100"
           />
         </div>
+
+        {/* Filter by Position (Admin Only) */}
+        {isAdmin && (
+          <div className="flex flex-col gap-2 w-full">
+            <label className="block font-bold text-white mb-2">Filter by Position:</label>
+            <select
+              name="position"
+              value={filter.position}
+              onChange={handleInputChange}
+              className="w-full p-2 border rounded bg-gray-100"
+            >
+              <option value="">All Positions</option>
+              {uniquePositions.map((position) => (
+                <option key={position} value={position}>
+                  {position}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       {/* Export Button (Admin Only) */}
